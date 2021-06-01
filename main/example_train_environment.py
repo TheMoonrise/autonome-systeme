@@ -1,18 +1,13 @@
-import os
 import numpy as np
 
 from mlagents_envs.base_env import ActionTuple
-from mlagents_envs.environment import UnityEnvironment
+from src.utils.domain import Domain
 
 # full documentation
 # https://github.com/Unity-Technologies/ml-agents/blob/main/docs/Python-API.md
 
-dirname = os.path.dirname(__file__)
-env_path = os.path.join(dirname, '../environment/Crawler.exe')
-
-# pass the relative path to the unity build of the target domain
-# filename set to None interacts directly with the editor
-env = UnityEnvironment(file_name=env_path)
+# use the domain helper class to get an environment on the current system
+env = Domain().environment()
 
 # returns the enviroment to it's default state
 env.reset()
