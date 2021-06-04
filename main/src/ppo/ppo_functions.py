@@ -1,7 +1,9 @@
 """Function definitions for computing ppo"""
 
+from .ppo_parameters import Parameters
 
-def ppo_returns(params, rewards, masks, values, next_values):
+
+def ppo_returns(params: Parameters, rewards, masks, values, value_next):
     """
     Computes the returns for the given rewards and values.
     :param params: The hyperparameters for the algorithm.
@@ -10,19 +12,13 @@ def ppo_returns(params, rewards, masks, values, next_values):
     :param values: The values estimated for each state.
     :param next_value: The value estimated for the upcoming state.
     """
-    assert 'gamma' in params
-    assert 'tau' in params
-
-    gamma = params['gamma']
-    tau = params['tau']
-
-    values = values + [next_values]
+    values = values + [value_next]
     advantage = 0
     returns = []
 
     for t in reversed(range(len(rewards))):
-        d = rewards[t] + gamma * values[t + 1] * masks[t] - values[t]
-        advantage = d + gamma * tau * masks[t] * advantage
+        d = rewards[t] + params.gamma * values[t + 1] * masks[t] - values[t]
+        advantage = d + params.gamma * params.tau * masks[t] * advantage
         returns.insert(0, advantage + values[t])
 
     return returns
