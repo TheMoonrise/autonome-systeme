@@ -48,9 +48,9 @@ def ppo_train(env: Env, params: Parameters, model: ActorCritic, optimizer: Optim
         update.update(optimizer, model)
 
         # at certain intervals measure the model performance
-        if i % (params.training_iterations // 10) == 0 or i == (params.training_iterations - 1):
+        if i % min(params.training_iterations // 10, 250) == 0 or i == (params.training_iterations - 1):
+            print()
             if not f_evaluate: continue
-            print('\nPausing training for model evaluation')
             f_evaluate()
 
 
@@ -104,12 +104,13 @@ def _trace(env: Env, params: Parameters, model: ActorCritic, device: str, state)
     """
     # define lists to hold the collected training data
     states, actions, probs, values = [], [], [], []
-    rewards, masks = [], []
+    rewards, masks, = [], []
 
-    entropy = 0
+    done = [False]
 
     # collect trace data for updating the model
     for _ in range(params.trace):
+        if all(done): state = env.reset()
         state = torch.FloatTensor(state).unsqueeze(0).to(device)
         states.append(state)
 
@@ -121,13 +122,12 @@ def _trace(env: Env, params: Parameters, model: ActorCritic, device: str, state)
 
         state_next, reward, done, _ = env.step(action.cpu().numpy())
         state = state_next.squeeze()
+        if isinstance(done, bool): done = [done]
 
         rewards.append(torch.FloatTensor(reward).to(device))
-        masks.append(torch.FloatTensor([done]).mul(-1).add(1).to(device))
+        masks.append(torch.FloatTensor(done).mul(-1).add(1).to(device))
 
         prob = dist.log_prob(action)
         probs.append(prob)
-
-        entropy += dist.entropy().mean()
 
     return state, states, actions, probs, values, rewards, masks

@@ -19,21 +19,19 @@ class Parameters:
         # the number of output actions
         self.outputs = outputs
 
-        # the size of the hidden layer
-        self.hidden = 256
-
-        # the scale value for the action normal distribution
-        self.scale = 0.1
+        # the size of the hidden layers
+        self.hidden01 = 64
+        self.hidden02 = 256
 
         # update parameters
         # the range to which the ratio between old and new policy is clamped
         self.clip = 0.2
 
         # the number of optimizations epochs to perform on one batch of traces
-        self.epochs = 4
+        self.epochs = 10
 
         # the size of the minibatches in which the update batch is divided into
-        self.mini_batch_size = 5
+        self.mini_batch_size = 25
 
         # the factor at which the critic loss influences the overall loss
         self.influence_critic = 0.5
@@ -43,17 +41,17 @@ class Parameters:
 
         # return value parameters
         # the discount factor applied to the rewards in each timestep
-        self.gamma = 0.99
+        self.gamma = 0.9
 
         # the discount factor applied additionally to gamma but only on the final sum elements
-        self.tau = 0.95
+        self.tau = 1
 
         # training parameters
         # the number of iterations the training should run for
-        self.training_iterations = 500
+        self.training_iterations = 2500
 
         # the trace length to collect for each iteration
-        self.trace = 200
+        self.trace = 35
 
         # the learning rate of the optimizer
-        self.learning_rate = 0.0001
+        self.learning_rate = 1e-5

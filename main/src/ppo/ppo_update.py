@@ -31,20 +31,20 @@ class Update:
 
         self.batch_size = states.size(0)
 
-    def _batch_iterator(self):
+    def _mini_batch(self):
         """
-        Divides the batch into minibatches and yields iterations of them
+        Divides the batch into minibatches.
+        :returns: A minibatch of the current trace data.
         """
-        for _ in range(self.batch_size // self.params.mini_batch_size):
-            selection = np.random.randint(0, self.batch_size, self.params.mini_batch_size)
+        selection = np.random.randint(0, self.batch_size, self.params.mini_batch_size)
 
-            states = self.states[selection, :]
-            actions = self.actions[selection, :]
-            probs = self.probs[selection, :]
-            returns = self.returns[selection, :]
-            advantages = self.advantages[selection, :]
+        states = self.states[selection, :]
+        actions = self.actions[selection, :]
+        probs = self.probs[selection, :]
+        returns = self.returns[selection, :]
+        advantages = self.advantages[selection, :]
 
-            yield states, actions, probs, returns, advantages
+        return states, actions, probs, returns, advantages
 
     def update(self, optimizer: torch.optim.Optimizer, model: ActorCritic):
         """
@@ -53,22 +53,21 @@ class Update:
         :param model: The ppo actor critic model being optimized.
         """
         for _ in range(self.params.epochs):
-            for states, actions, probs_old, returns, advantages in self._batch_iterator():
+            states, actions, probs_old, returns, advantages = self._mini_batch()
 
-                dist, values = model(states)
-                entropy = dist.entropy().mean()
-                probs_new = dist.log_prob(actions)
+            dist, values = model(states)
+            entropy = dist.entropy().mean()
+            probs_new = dist.log_prob(actions)
 
-                # ratio = probs_new / probs_old
-                ratio = (probs_new - probs_old).exp()
-                surr1 = ratio * advantages
-                surr2 = torch.clamp(ratio, 1.0 - self.params.clip, 1.0 + self.params.clip) * advantages
+            ratio = (probs_new - probs_old).exp()
+            surr1 = ratio * advantages
+            surr2 = torch.clamp(ratio, 1.0 - self.params.clip, 1.0 + self.params.clip) * advantages
 
-                loss_actor = torch.min(surr1, surr2).mean()
-                loss_critic = (returns - values).pow(2).mean()
+            objc_actor = torch.min(surr1, surr2).mean()
+            loss_critic = (returns - values).pow(2).mean()
 
-                loss = -(loss_actor - self.params.influence_critic * loss_critic + self.params.influence_entropy * entropy)
+            loss = -(objc_actor - self.params.influence_critic * loss_critic + self.params.influence_entropy * entropy)
 
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
