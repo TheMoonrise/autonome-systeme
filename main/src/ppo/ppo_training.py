@@ -1,6 +1,7 @@
 """Handles training and evaluation of ppo networks"""
 
 import torch
+import numpy as np
 
 from gym import Env
 from torch.optim import Optimizer
@@ -11,123 +12,153 @@ from .ppo_update import Update
 from .ppo_functions import ppo_returns
 
 
-def ppo_train(env: Env, params: Parameters, model: ActorCritic, optimizer: Optimizer, device: str, f_evaluate=None):
+class TrainAndEvaluate():
     """
-    Performs a ppo training loop on the given model and environment.
-    :param env: The open ai gym environment to train on.
-    :param params: The parameters used for the training.
-    :param model: The ppo actor critic model trained on the environment.
-    :param optimizer: The optimizer configured for the model and used for improving based on collected experience.
-    :param device: String property naming the device used for training.
-    :param f_evaluate: Function called to evaluate the current model performance.
+    Holds functionality for training, evaluating and visualizing ppo networks.
     """
-    print("Begin ppo training")
-    state = env.reset()
 
-    for i in range(params.training_iterations):
-        print(f"\rTraining iteration {i:0>4}", end='')
+    def __init__(self, env: Env, model: ActorCritic):
+        """
+        Initiates the training object.
+        :param env: The environment to train or evaluate on.
+        :param model: The ppo model used for training or evaluation.
+        """
+        self.env = env
+        self.state = env.reset()
+        self.model = model
 
-        trace = _trace(env, params, model, device, state)
-        state, states, actions, probs, values, rewards, masks = trace
+        # training trace data collection
+        self.states = []
+        self.actions = []
+        self.probs = []
+        self.values = []
 
-        # compute the discounted returns for each state in the trace
-        state_next = torch.FloatTensor(state).unsqueeze(0).to(device)
-        _, value_next = model(state_next)
-        returns = ppo_returns(params, rewards, masks, values, value_next.squeeze(1))
+        self.rewards = []
+        self.masks = []
 
-        # combine the trace in tensors and update the model
-        states = torch.stack(states)
-        actions = torch.stack(actions)
-        probs = torch.stack(probs).detach()
-        values = torch.stack(values).detach()
+        self.done = [False]
 
-        returns = torch.stack(returns).detach()
-        advantages = returns - values
+        # model performance tracking
+        self.performance = []
+        self.performance_counter = 0
 
-        update = Update(params, states, actions, probs, returns, advantages)
-        update.update(optimizer, model)
+    def train(self, params: Parameters, optimizer: Optimizer, device: str, save_interval: int = -1):
+        """
+        Performs a ppo training loop on the given model and environment.
+        :param params: The parameters used for the training.
+        :param optimizer: The optimizer configured for the model and used for improving based on collected experience.
+        :param device: String property naming the device used for training.
+        :param save_interval: The interval at which to save the current model.
+        """
+        print("Begin training")
+        self.state = self.env.reset()
 
-        # at certain intervals measure the model performance
-        if i % min(params.training_iterations // 10, 250) == 0 or i == (params.training_iterations - 1):
-            print()
-            if not f_evaluate: continue
-            f_evaluate()
+        for i in range(1, params.training_iterations + 1):
+            performance = np.average(self.performance[-10:]) if self.performance else 0
+            print(f"\rIteration, Epoch, Performance [ {i:^5} | {len(self.performance):^5} | {performance:^5.0f} ]", end='')
 
+            self._clear_trace()
+            self._collect_trace(params, device)
 
-def ppo_evaluate(env: Env, model: ActorCritic, device: str, count: int, render: bool):
-    """
-    Runs an complete episode on the given environment for evaluation.
-    :param env: The open ai gym environment to evaluate on.
-    :param model: The ppo actor critic model to be evaluated.
-    :param device: String property naming the device used for the model.
-    :param count: The number of iteratios run on the environment.
-    :param render: Whether the environment should be rendered.
-    :returns: The total reward collected over the evaluation.
-    """
-    reward_mean = 0
+            # compute the discounted returns for each state in the trace
+            state_next = torch.FloatTensor(self.state).to(device)
+            if len(state_next.shape) < 2: state_next = state_next.unsqueeze(0)
 
-    for i in range(count):
-        state = env.reset()
-        reward_total = 0
-        done = False
+            _, value_next = self.model(state_next)
+            returns = ppo_returns(params, self.rewards, self.masks, self.values, value_next.squeeze(1))
 
-        while not done:
-            state = torch.FloatTensor(state).unsqueeze(0).to(device)
-            dist, _ = model(state)
+            # combine the trace in tensors and update the model
+            states = torch.stack(self.states)
+            actions = torch.stack(self.actions)
+            probs = torch.stack(self.probs).detach()
+            values = torch.stack(self.values).detach()
+
+            returns = torch.stack(returns).detach()
+            advantages = returns - values
+
+            update = Update(params, states, actions, probs, returns, advantages)
+            update.update(optimizer, self.model)
+
+            if save_interval > 0 and (i % save_interval == 0 or i == params.training_iterations):
+                appendix = f'[{i:0>4}({performance:.0f})]'
+                self.model.save(appendix)
+
+    def evaluate(self, render: bool):
+        """
+        Runs an complete episode on the given environment for evaluation.
+        For evaluation only the first agent is considered.
+        :param render: Whether the environment should be rendered.
+        :returns: The total reward collected over the evaluation.
+        """
+        self.state = self.env.reset()
+        self.performance_counter = 0
+        self.done = [False]
+
+        while not self.done[0]:
+            self.state = torch.FloatTensor(self.state)
+            if len(self.state.shape) < 2: self.state = self.state.unsqueeze(0)
+
+            dist, _ = self.model(self.state)
             action = dist.sample().cpu().numpy()
 
-            state_next, reward, done, _ = env.step(action)
-            state = state_next.squeeze()
+            state_next, reward, self.done, _ = self.env.step(action)
+            self.state = state_next.squeeze()
 
-            reward_total += reward[0]
-            if render and i == 0: env.render()
+            if isinstance(self.done, bool): self.done = [self.done]
 
-        reward_mean += reward_total
-    return reward_mean / count
+            self.performance_counter += reward[0]
+            if render: self.env.render()
 
+        self.performance.append(self.performance_counter)
+        return self.performance_counter
 
-def _trace(env: Env, params: Parameters, model: ActorCritic, device: str, state):
-    """
-    Samples a trace of training data from the environment
-    :param env: The open ai gym environment to train on.
-    :param params: The parameters used for the training.
-    :param model: The ppo actor critic model trained on the environment.
-    :param device: String property naming the device used for training.
-    :param state: The initial state the environment is currently in
-    :returns: The state the environment is currently in.
-    :returns: The list of collected state values.
-    :returns: The list of collected actions.
-    :returns: The list of action probabilities for each action in the action list.
-    :returns: The critic state value for each state in the state list.
-    :returns: The list of rewards received in each step during the trace.
-    :returns: The list of masks for filtering terminal states where 0 indicates a terminal state.
-    """
-    # define lists to hold the collected training data
-    states, actions, probs, values = [], [], [], []
-    rewards, masks, = [], []
+    def _collect_trace(self, params: Parameters, device: str):
+        """
+        Samples a trace of training data from the environment
+        :param params: The parameters used for the training.
+        :param device: String property naming the device used for training.
+        """
+        for _ in range(params.trace):
+            if all(self.done): self.state = self.env.reset()
+            self.state = torch.FloatTensor(self.state).to(device)
 
-    done = [False]
+            # pendulum environment provides only a single state array
+            if len(self.state.shape) < 2: self.state = self.state.unsqueeze(0)
+            self.states.append(self.state)
 
-    # collect trace data for updating the model
-    for _ in range(params.trace):
-        if all(done): state = env.reset()
-        state = torch.FloatTensor(state).unsqueeze(0).to(device)
-        states.append(state)
+            dist, value = self.model(self.state)
+            self.values.append(value.squeeze(1))
 
-        dist, value = model(state)
-        values.append(value.squeeze(1))
+            action = dist.sample()
+            self.actions.append(action)
 
-        action = dist.sample()
-        actions.append(action)
+            state_next, rewards, self.done, _ = self.env.step(action.cpu().numpy())
+            self.state = state_next.squeeze()
 
-        state_next, reward, done, _ = env.step(action.cpu().numpy())
-        state = state_next.squeeze()
-        if isinstance(done, bool): done = [done]
+            # pendulum environment provides only a single bool
+            if isinstance(self.done, bool): self.done = [self.done]
 
-        rewards.append(torch.FloatTensor(reward).to(device))
-        masks.append(torch.FloatTensor(done).mul(-1).add(1).to(device))
+            self.rewards.append(torch.FloatTensor(rewards).to(device))
+            self.masks.append(torch.FloatTensor(self.done).mul(-1).add(1).to(device))
 
-        prob = dist.log_prob(action)
-        probs.append(prob)
+            prob = dist.log_prob(action)
+            self.probs.append(prob)
 
-    return state, states, actions, probs, values, rewards, masks
+            # update performance tracking for the first agent
+            self.performance_counter += rewards[0]
+
+            if self.done[0]:
+                self.performance.append(self.performance_counter)
+                self.performance_counter = 0
+
+    def _clear_trace(self):
+        """
+        Removes the current trace data.
+        """
+        self.states.clear()
+        self.actions.clear()
+        self.probs.clear()
+        self.values.clear()
+
+        self.rewards.clear()
+        self.masks.clear()

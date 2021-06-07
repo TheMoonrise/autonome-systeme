@@ -15,12 +15,15 @@ class ActorCritic(nn.Module):
     model_directory_save = "../../../models/ppo/temp"
     model_directory_load = "../../../models/ppo"
 
-    def __init__(self, params: Parameters):
+    def __init__(self, params: Parameters, name: str):
         """
         Initializes the model.
         :param params: Parameters container holding setup parameters.
+        :param name: The name of the model used when saving.
         """
         super().__init__()
+
+        self.name = name
 
         self.net = nn.Sequential(
             # nn.Linear(params.inputs, params.hidden01),
@@ -30,6 +33,8 @@ class ActorCritic(nn.Module):
         self.actor = nn.Sequential(
             nn.Linear(params.inputs, params.hidden01),
             nn.ReLU(),
+            # nn.Linear(params.hidden01, params.hidden01),
+            # nn.ReLU(),
             nn.Linear(params.hidden01, params.hidden02),
             nn.ReLU()
         )
@@ -48,6 +53,8 @@ class ActorCritic(nn.Module):
         self.critic = nn.Sequential(
             nn.Linear(params.inputs, params.hidden01),
             nn.ReLU(),
+            # nn.Linear(params.hidden01, params.hidden01),
+            # nn.ReLU(),
             nn.Linear(params.hidden01, params.hidden02),
             nn.ReLU(),
             nn.Linear(params.hidden02, 1)
@@ -83,21 +90,20 @@ class ActorCritic(nn.Module):
         val = self.critic(x)
         return dst, val
 
-    def save(self, file_name: str):
+    def save(self, appendix: str = ''):
         """
         Saves the current model parameters to file.
-        :param file_name: The name of the file the model is saved to.
+        :param appendix: An appendix to add to the file name of the model.
         """
         directory = os.path.dirname(__file__)
-        path = os.path.join(directory, ActorCritic.model_directory_save, file_name)
+        path = os.path.join(directory, ActorCritic.model_directory_save, self.name + appendix)
         torch.save(self.state_dict(), path)
 
-    def load(self, file_name: str):
+    def load(self):
         """
-        Loads model parameters from the given file name.
-        : param file_name: the name of the file the model is loaded from.
+        Loads model parameters from the name of the model.
         """
         directory = os.path.dirname(__file__)
-        path = os.path.join(directory, ActorCritic.model_directory_load, file_name)
+        path = os.path.join(directory, ActorCritic.model_directory_load, self.name)
         self.load_state_dict(torch.load(path))
         self.eval()

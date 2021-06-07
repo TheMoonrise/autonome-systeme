@@ -3,7 +3,7 @@ import sys
 
 from src.ppo.ppo_parameters import Parameters
 from src.ppo.ppo_actor_critic import ActorCritic
-from src.ppo.ppo_training import ppo_evaluate
+from src.ppo.ppo_training import TrainAndEvaluate
 
 # prepare the open ai gym environment
 env = gym.make('Pendulum-v0')
@@ -16,10 +16,12 @@ params = Parameters(inputs, outputs)
 
 # create a model and load the parameters
 # use the first commandline argument for the model if given
-model = ActorCritic(params)
-model.load('pendulum-v0' if len(sys.argv) < 2 else sys.argv[1])
+model = ActorCritic(params, 'pendulum-v0' if len(sys.argv) < 2 else sys.argv[1])
+model.load()
 
 # run the evaluation loop indefinitely
+train = TrainAndEvaluate(env, model)
+
 while True:
-    result = ppo_evaluate(env, model, 'cpu', 1, True)
+    result = train.evaluate(True)
     print(f"Performance (reward) {result:.2f}")

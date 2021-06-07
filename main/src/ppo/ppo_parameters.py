@@ -41,10 +41,10 @@ class Parameters:
 
         # return value parameters
         # the discount factor applied to the rewards in each timestep
-        self.gamma = 0.9
+        self.gamma = 0.95
 
         # the discount factor applied additionally to gamma but only on the final sum elements
-        self.tau = 1
+        self.tau = 0.99
 
         # training parameters
         # the number of iterations the training should run for
