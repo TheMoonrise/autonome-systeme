@@ -1,13 +1,11 @@
 {
   "dependencies": {
     "com.unity.barracuda": {
-      "version": "2.0.0-pre.3",
+      "version": "1.0.4",
       "depth": 1,
       "source": "registry",
       "dependencies": {
-        "com.unity.burst": "1.3.4",
-        "com.unity.modules.jsonserialize": "1.0.0",
-        "com.unity.modules.imageconversion": "1.0.0"
+        "com.unity.burst": "1.3.4"
       },
       "url": "https://packages.unity.com"
     },
@@ -65,23 +63,18 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ml-agents": {
-      "version": "file:C:/Users/tamun/Downloads/ml-agents-main/ml-agents-main/com.unity.ml-agents",
+      "version": "1.0.8",
       "depth": 0,
-      "source": "local",
+      "source": "registry",
       "dependencies": {
-        "com.unity.barracuda": "2.0.0-pre.3",
+        "com.unity.barracuda": "1.0.4",
         "com.unity.modules.imageconversion": "1.0.0",
-        "com.unity.modules.jsonserialize": "1.0.0"
-      }
-    },
-    "com.unity.ml-agents.extensions": {
-      "version": "file:C:/Users/tamun/Downloads/ml-agents-main/ml-agents-main/com.unity.ml-agents.extensions",
-      "depth": 0,
-      "source": "local",
-      "dependencies": {
-        "com.unity.ml-agents": "2.0.0-exp.1",
-        "com.unity.modules.physics": "1.0.0"
-      }
+        "com.unity.modules.jsonserialize": "1.0.0",
+        "com.unity.modules.physics": "1.0.0",
+        "com.unity.modules.physics2d": "1.0.0",
+        "com.unity.modules.unityanalytics": "1.0.0"
+      },
+      "url": "https://packages.unity.com"
     },
     "com.unity.nuget.newtonsoft-json": {
       "version": "2.0.0",
