@@ -50,8 +50,11 @@ class TrainAndEvaluate():
         :param device: String property naming the device used for training.
         :param save_interval: The interval at which to save the current model.
         """
-        print("Begin training")
         self.state = self.env.reset()
+        self.done = [False]
+
+        self.performance.clear()
+        self.performance_counter = 0
 
         for i in range(1, params.training_iterations + 1):
             performance = np.average(self.performance[-10:]) if self.performance else 0
@@ -61,9 +64,7 @@ class TrainAndEvaluate():
             self._collect_trace(params, device)
 
             # compute the discounted returns for each state in the trace
-            state_next = torch.FloatTensor(self.state).to(device)
-            if len(state_next.shape) < 2: state_next = state_next.unsqueeze(0)
-
+            state_next = self._shaped_state_tensor(self.state, device)
             _, value_next = self.model(state_next)
             returns = ppo_returns(params, self.rewards, self.masks, self.values, value_next.squeeze(1))
 
@@ -95,9 +96,7 @@ class TrainAndEvaluate():
         self.done = [False]
 
         while not self.done[0]:
-            self.state = torch.FloatTensor(self.state)
-            if len(self.state.shape) < 2: self.state = self.state.unsqueeze(0)
-
+            self.state = self._shaped_state_tensor(self.state)
             dist, _ = self.model(self.state)
             action = dist.sample().cpu().numpy()
 
@@ -120,10 +119,7 @@ class TrainAndEvaluate():
         """
         for _ in range(params.trace):
             if all(self.done): self.state = self.env.reset()
-            self.state = torch.FloatTensor(self.state).to(device)
-
-            # pendulum environment provides only a single state array
-            if len(self.state.shape) < 2: self.state = self.state.unsqueeze(0)
+            self.state = self._shaped_state_tensor(self.state, device)
             self.states.append(self.state)
 
             dist, value = self.model(self.state)
@@ -138,8 +134,8 @@ class TrainAndEvaluate():
             # pendulum environment provides only a single bool
             if isinstance(self.done, bool): self.done = [self.done]
 
-            self.rewards.append(torch.FloatTensor(rewards).to(device))
-            self.masks.append(torch.FloatTensor(self.done).mul(-1).add(1).to(device))
+            self.rewards.append(torch.tensor(rewards, device=device, dtype=torch.float32))
+            self.masks.append(torch.tensor(self.done, device=device, dtype=torch.float32).mul(-1).add(1))
 
             prob = dist.log_prob(action)
             self.probs.append(prob)
@@ -162,3 +158,15 @@ class TrainAndEvaluate():
 
         self.rewards.clear()
         self.masks.clear()
+
+    def _shaped_state_tensor(self, state: np.ndarray, device: str = 'cpu'):
+        """
+        Converts the given state to a well-formed torch tensor.
+        :param state: The state numpy array to modify.
+        :param device: The device to move the tensor to.
+        :returns: A tensor of the shape (num_agents, state_size)
+        """
+        state = torch.tensor(state, device=device, dtype=torch.float32)
+        # some (pendulum) environment states are only one dimensional
+        if len(state.shape) < 2: state = state.unsqueeze(0)
+        return state

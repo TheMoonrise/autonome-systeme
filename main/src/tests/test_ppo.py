@@ -12,7 +12,7 @@ def test_ppo_returns():
     """
     params = Parameters(3, 1)
     params.gamma = 1
-    params.tau = 1
+    params.lmbda = 1
 
     rewards = [torch.tensor([1, 1, 0]), torch.tensor([0, 0, 0]), torch.tensor([1, 1, 1])]
     masks = [torch.tensor([1, 0, 1]), torch.tensor([1, 1, 1]), torch.tensor([1, 0, 1])]

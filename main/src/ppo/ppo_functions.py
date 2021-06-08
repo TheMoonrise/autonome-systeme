@@ -18,7 +18,7 @@ def ppo_returns(params: Parameters, rewards, masks, values, value_next):
 
     for t in reversed(range(len(rewards))):
         d = rewards[t] + params.gamma * values[t + 1] * masks[t] - values[t]
-        advantage = d + params.gamma * params.tau * masks[t] * advantage
+        advantage = d + params.gamma * params.lmbda * masks[t] * advantage
         returns.insert(0, advantage + values[t])
 
     return returns

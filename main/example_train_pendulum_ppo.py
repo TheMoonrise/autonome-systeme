@@ -9,7 +9,6 @@ from src.ppo.ppo_training import TrainAndEvaluate
 
 # prepare the open ai gym environment
 env = gym.make('Pendulum-v0')
-env_evaluation = gym.make('Pendulum-v0')
 
 # define the hyper parameters
 inputs = env.observation_space.shape[0]
