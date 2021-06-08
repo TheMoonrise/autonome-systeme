@@ -19,10 +19,6 @@ class Parameters:
         # the number of output actions
         self.outputs = outputs
 
-        # the size of the hidden layers
-        self.hidden01 = 64
-        self.hidden02 = 256
-
         # update parameters
         # the range to which the ratio between old and new policy is clamped
         self.clip = 0.2

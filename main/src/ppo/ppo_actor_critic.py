@@ -4,8 +4,6 @@ import torch
 import os
 
 from torch import nn
-from torch.distributions import Normal
-from typing import Union
 from .ppo_parameters import Parameters
 
 
@@ -24,71 +22,7 @@ class ActorCritic(nn.Module):
         super().__init__()
 
         self.name = name
-
-        self.net = nn.Sequential(
-            # nn.Linear(params.inputs, params.hidden01),
-            # nn.ReLU(),
-        )
-
-        self.actor = nn.Sequential(
-            nn.Linear(params.inputs, params.hidden01),
-            nn.ReLU(),
-            # nn.Linear(params.hidden01, params.hidden01),
-            # nn.ReLU(),
-            nn.Linear(params.hidden01, params.hidden02),
-            nn.ReLU()
-        )
-
-        self.actor_head_loc = nn.Sequential(
-            nn.Linear(params.hidden02, params.outputs),
-            # check if this is sensible for the crawler domain
-            nn.Tanh()
-        )
-
-        self.actor_head_scl = nn.Sequential(
-            nn.Linear(params.hidden02, params.outputs),
-            nn.Softplus()
-        )
-
-        self.critic = nn.Sequential(
-            nn.Linear(params.inputs, params.hidden01),
-            nn.ReLU(),
-            # nn.Linear(params.hidden01, params.hidden01),
-            # nn.ReLU(),
-            nn.Linear(params.hidden01, params.hidden02),
-            nn.ReLU(),
-            nn.Linear(params.hidden02, 1)
-        )
-
-        # self.apply(self._configure_weights)
-
-    def _configure_weights(self, x):
-        """
-        Configures the initial weights for the given module.
-        :param x: The module to set the weights for.
-        Only linear modules are considered.
-        """
-        if isinstance(x, nn.Linear):
-            nn.init.normal_(x.weight, mean=0, std=0.1)
-            nn.init.constant_(x.bias, 0.1)
-
-    def forward(self, x: torch.Tensor) -> Union[torch.distributions.Normal, torch.Tensor]:
-        """
-        Computes the action distribution and state value for the given batch of states.
-        :param x: The batch of states.
-        :returns: The normal distribution over the possible action values.
-        :returns: The state value obtained from the critic network.
-        """
-        x = self.net(x)
-
-        act = self.actor(x)
-        # the action amplitude for the pendulum is 4
-        loc = self.actor_head_loc(act) * 2
-        scl = self.actor_head_scl(act) + 1e-3
-        dst = Normal(loc, scl)
-
-        val = self.critic(x)
-        return dst, val
+        self.params = params
 
     def save(self, appendix: str = ''):
         """
