@@ -14,7 +14,7 @@ from pathlib import Path
 from src.sac.sac_actor_critic import ValueNetwork, SoftQNetwork, PolicyNetwork
 from src.sac.sac_functions import NormalizedActions, ReplayBuffer
 
-
+# If models folder doesn't exist, then create it.
 Path("models/").mkdir(parents=True, exist_ok=True)
 
 use_cuda = torch.cuda.is_available()
@@ -27,6 +27,8 @@ def plot(frame_idx, rewards):
     plt.title('frame %s. reward: %s' % (frame_idx, rewards[-1]))
     plt.plot(rewards)
     plt.show()
+
+############################ INITALIZATIONS ################################
 
 env = NormalizedActions(gym.make("Pendulum-v0"))
 
@@ -62,6 +64,11 @@ policy_optimizer = optim.Adam(policy_net.parameters(), lr=policy_lr)
 replay_buffer_size = 1000000
 replay_buffer = ReplayBuffer(replay_buffer_size)
 
+####################################################################################
+
+"""
+Initiates training loop.
+"""
 def sac_train():
     max_frames  = 40000
     max_steps   = 500
@@ -104,6 +111,9 @@ def sac_train():
             
         rewards.append(episode_reward)
 
+"""
+
+"""
 def sac_update(batch_size,gamma=0.99,soft_tau=1e-2,):
     
     state, action, reward, next_state, done = replay_buffer.sample(batch_size)
@@ -150,7 +160,7 @@ def sac_update(batch_size,gamma=0.99,soft_tau=1e-2,):
     policy_loss.backward()
     policy_optimizer.step()
     
-    
+    #Soft update model parameters. θ_target = τ*θ_local + (1 - τ)*θ_target
     for target_param, param in zip(target_value_net.parameters(), value_net.parameters()):
         target_param.data.copy_(
             target_param.data * (1.0 - soft_tau) + param.data * soft_tau
