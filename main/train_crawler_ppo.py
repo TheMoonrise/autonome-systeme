@@ -22,8 +22,8 @@ params.epochs = 10
 params.mini_batch_size = 20
 params.influence_critic = 0.5
 params.influence_entropy = 0.001
-params.gamma = 0.9
-params.lmbda = 1
+params.gamma = 0.95
+params.lmbda = .99
 params.trace = 30
 params.learning_rate = 1e-5
 

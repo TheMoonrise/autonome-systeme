@@ -55,16 +55,22 @@ class Update:
         for _ in range(self.params.epochs):
             states, actions, probs_old, returns, advantages = self._mini_batch()
 
+            states = states.reshape((-1, self.params.inputs))
+            actions = actions.reshape((-1, self.params.outputs))
+
             dist, values = model(states)
             entropy = dist.entropy().mean()
             probs_new = dist.log_prob(actions)
+
+            probs_new = probs_new.reshape(probs_old.shape)
+            values = values.reshape((self.params.mini_batch_size, -1))
 
             ratio = (probs_new - probs_old).exp().mean(dim=2)
             surr1 = ratio * advantages
             surr2 = torch.clamp(ratio, 1.0 - self.params.clip, 1.0 + self.params.clip) * advantages
 
             objc_actor = torch.min(surr1, surr2).mean()
-            loss_critic = (returns - values.squeeze()).pow(2).mean()
+            loss_critic = (returns - values).pow(2).mean()
 
             loss = -(objc_actor - self.params.influence_critic * loss_critic + self.params.influence_entropy * entropy)
 
