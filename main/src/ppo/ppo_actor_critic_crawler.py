@@ -39,12 +39,12 @@ class ActorCriticCrawler(ActorCritic):
         )
 
         self.actor_head_loc = nn.Sequential(
-            nn.BatchNorm1d(self.hidden02),
+            # nn.BatchNorm1d(self.hidden02),
             nn.Linear(self.hidden02, params.outputs),
         )
 
         self.actor_head_scl = nn.Sequential(
-            nn.BatchNorm1d(self.hidden02),
+            # nn.BatchNorm1d(self.hidden02),
             nn.Linear(self.hidden02, params.outputs),
             nn.Softplus()
         )
@@ -56,7 +56,7 @@ class ActorCriticCrawler(ActorCritic):
             nn.BatchNorm1d(self.hidden01),
             nn.Linear(self.hidden01, self.hidden02),
             nn.ReLU(),
-            nn.BatchNorm1d(self.hidden02),
+            # nn.BatchNorm1d(self.hidden02),
             nn.Linear(self.hidden02, 1)
         )
 
