@@ -1,10 +1,8 @@
 import torch
+import os
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Normal
-
-use_cuda = torch.cuda.is_available()
-device   = torch.device("cuda" if use_cuda else "cpu")
 
 class ValueNetwork(nn.Module):
     """
@@ -24,6 +22,7 @@ class ValueNetwork(nn.Module):
         self.linear3.bias.data.uniform_(-init_w, init_w)
     
     """
+    TODO: Add comment
     """
     def forward(self, state):
         x = F.relu(self.linear1(state))
@@ -33,14 +32,14 @@ class ValueNetwork(nn.Module):
         
         
 class SoftQNetwork(nn.Module):
-    """
-    Initializes the model.
-    :param num_inputs:
-    :param num_actions:
-    :param hidden_size: Size for the Networks hidden layers.
-    :param init_w: Default weight.
-    """
     def __init__(self, num_inputs, num_actions, hidden_size, init_w=3e-3):
+        """
+        Initializes the model.
+        :param num_inputs:
+        :param num_actions:
+        :param hidden_size: Size for the Networks hidden layers.
+        :param init_w: Default weight.
+        """
         super(SoftQNetwork, self).__init__()
         
         self.linear1 = nn.Linear(num_inputs + num_actions, hidden_size)
@@ -49,7 +48,10 @@ class SoftQNetwork(nn.Module):
         
         self.linear3.weight.data.uniform_(-init_w, init_w)
         self.linear3.bias.data.uniform_(-init_w, init_w)
-        
+
+    """
+    TODO: Add comment
+    """    
     def forward(self, state, action):
         x = torch.cat([state, action], 1)
         x = F.relu(self.linear1(x))
@@ -59,6 +61,7 @@ class SoftQNetwork(nn.Module):
         
         
 class PolicyNetwork(nn.Module):
+    model_directory_save = "../../../models/sac/temp"
     """
     Initializes the model.
     :param num_inputs:
@@ -68,8 +71,12 @@ class PolicyNetwork(nn.Module):
     :param log_std_min:
     :param log_std_max:
     """
-    def __init__(self, num_inputs, num_actions, hidden_size, init_w=3e-3, log_std_min=-20, log_std_max=2):
+    def __init__(self, num_inputs, num_actions, hidden_size, name: str, device, init_w=3e-3, log_std_min=-20, log_std_max=2):
         super(PolicyNetwork, self).__init__()
+
+        self.device = device
+
+        self.name = name
         
         self.log_std_min = log_std_min
         self.log_std_max = log_std_max
@@ -106,9 +113,9 @@ class PolicyNetwork(nn.Module):
         
         normal = Normal(0, 1)
         z      = normal.sample()
-        action = torch.tanh(mean+ std*z.to(device))
+        action = torch.tanh(mean+ std*z.to(self.device))
         # calculate entropies
-        log_prob = Normal(mean, std).log_prob(mean+ std*z.to(device)) - torch.log(1 - action.pow(2) + epsilon)
+        log_prob = Normal(mean, std).log_prob(mean+ std*z.to(self.device)) - torch.log(1 - action.pow(2) + epsilon)
         return action, log_prob, z, mean, log_std
         
     """
@@ -116,15 +123,24 @@ class PolicyNetwork(nn.Module):
         a(s,e)= tanh(mu(s)+sigma(s)+e)
     """
     def get_action(self, state):
-        state = torch.FloatTensor(state).unsqueeze(0).to(device)
+        state = torch.FloatTensor(state).unsqueeze(0).to(self.device)
         # calculate Gaussian distribusion of (mean, log_std)
         mean, log_std = self.forward(state)
         std = log_std.exp()
         
         normal = Normal(0, 1)
         # sample actions
-        z      = normal.sample().to(device)
+        z      = normal.sample().to(self.device)
         action = torch.tanh(mean + std*z)
         
         action  = action.cpu()#.detach().cpu().numpy()
         return action[0]
+
+    def save(self, appendix: str = ''):
+        """
+        Saves the current model parameters to file.
+        :param appendix: An appendix to add to the file name of the model.
+        """
+        directory = os.path.dirname(__file__)
+        path = os.path.join(directory, PolicyNetwork.model_directory_save, self.name + appendix)
+        torch.save(self.state_dict(), path)
