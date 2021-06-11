@@ -5,13 +5,13 @@ import torch.nn.functional as F
 from torch.distributions import Normal
 
 class ValueNetwork(nn.Module):
-    """
-    Initializes the model.
-    :param state_dim: Dimension of each state.
-    :param hidden_dim: Dimension for the Networks hidden layers.
-    :param init_w: Default weight.
-    """
     def __init__(self, state_dim, hidden_dim, init_w=3e-3):
+        """
+        Initializes the model.
+        :param state_dim: Dimension of each state.
+        :param hidden_dim: Dimension for the Networks hidden layers.
+        :param init_w: Default weight.
+        """
         super(ValueNetwork, self).__init__()
         
         self.linear1 = nn.Linear(state_dim, hidden_dim)
@@ -21,10 +21,10 @@ class ValueNetwork(nn.Module):
         self.linear3.weight.data.uniform_(-init_w, init_w)
         self.linear3.bias.data.uniform_(-init_w, init_w)
     
-    """
-    TODO: Add comment
-    """
     def forward(self, state):
+        """
+        TODO: Add comment
+        """
         x = F.relu(self.linear1(state))
         x = F.relu(self.linear2(x))
         x = self.linear3(x)
@@ -48,11 +48,11 @@ class SoftQNetwork(nn.Module):
         
         self.linear3.weight.data.uniform_(-init_w, init_w)
         self.linear3.bias.data.uniform_(-init_w, init_w)
-
-    """
-    TODO: Add comment
-    """    
+  
     def forward(self, state, action):
+        """
+        TODO: Add comment
+        """  
         x = torch.cat([state, action], 1)
         x = F.relu(self.linear1(x))
         x = F.relu(self.linear2(x))
@@ -62,16 +62,17 @@ class SoftQNetwork(nn.Module):
         
 class PolicyNetwork(nn.Module):
     model_directory_save = "../../../models/sac/temp"
-    """
-    Initializes the model.
-    :param num_inputs:
-    :param num_actions:
-    :param hidden_size: Size for the Networks hidden layers.
-    :param init_w:
-    :param log_std_min:
-    :param log_std_max:
-    """
+    
     def __init__(self, num_inputs, num_actions, hidden_size, name: str, device, init_w=3e-3, log_std_min=-20, log_std_max=2):
+        """
+        Initializes the model.
+        :param num_inputs:
+        :param num_actions:
+        :param hidden_size: Size for the Networks hidden layers.
+        :param init_w:
+        :param log_std_min:
+        :param log_std_max:
+        """
         super(PolicyNetwork, self).__init__()
 
         self.device = device
@@ -92,9 +93,10 @@ class PolicyNetwork(nn.Module):
         self.log_std_linear.weight.data.uniform_(-init_w, init_w)
         self.log_std_linear.bias.data.uniform_(-init_w, init_w)
 
-    """
-    """
     def forward(self, state):
+        """
+        TODO: Add comment
+        """
         x = F.relu(self.linear1(state))
         x = F.relu(self.linear2(x))
         
@@ -104,9 +106,10 @@ class PolicyNetwork(nn.Module):
         
         return mean, log_std
     
-    """
-    """
     def evaluate(self, state, epsilon=1e-6):
+        """
+        TODO: Add comment
+        """
         # calculate Gaussian distribusion of (mean, log_std)
         mean, log_std = self.forward(state)
         std = log_std.exp()
@@ -118,11 +121,11 @@ class PolicyNetwork(nn.Module):
         log_prob = Normal(mean, std).log_prob(mean+ std*z.to(self.device)) - torch.log(1 - action.pow(2) + epsilon)
         return action, log_prob, z, mean, log_std
         
-    """
-    Returns the action based on a squashed gaussian policy. That means the samples are obtained according to:
-        a(s,e)= tanh(mu(s)+sigma(s)+e)
-    """
     def get_action(self, state):
+        """
+        Returns the action based on a squashed gaussian policy. That means the samples are obtained according to:
+            a(s,e)= tanh(mu(s)+sigma(s)+e)
+        """
         state = torch.FloatTensor(state).unsqueeze(0).to(self.device)
         # calculate Gaussian distribusion of (mean, log_std)
         mean, log_std = self.forward(state)

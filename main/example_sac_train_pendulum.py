@@ -80,10 +80,10 @@ replay_buffer = ReplayBuffer(replay_buffer_size)
 
 ####################################################################################
 
-"""
-Initiates training loop.
-"""
 def sac_train():
+    """
+    Initiates training loop.
+    """
     frame_idx   = 0
     rewards     = []
 
@@ -118,9 +118,10 @@ def sac_train():
             
         rewards.append(episode_reward)
 
-"""
-"""
 def sac_update(batch_size,gamma,soft_tau):
+    """
+    TODO: add comment
+    """
     
     state, action, reward, next_state, done = replay_buffer.sample(batch_size)
 
