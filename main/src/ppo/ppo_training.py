@@ -95,7 +95,7 @@ class TrainAndEvaluate():
         self.performance_counter = 0
         self.done = [False]
 
-        while not self.done[0]:
+        while not all(self.done):
             self.state = self._shaped_state_tensor(self.state)
             dist, _ = self.model(self.state)
             action = dist.sample().cpu().numpy()
@@ -105,7 +105,7 @@ class TrainAndEvaluate():
 
             if isinstance(self.done, bool): self.done = [self.done]
 
-            self.performance_counter += reward[0]
+            self.performance_counter += np.mean(reward)
             if render: self.env.render()
 
         self.performance.append(self.performance_counter)

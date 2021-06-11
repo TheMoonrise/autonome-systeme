@@ -1,3 +1,4 @@
+import sys
 import torch
 import torch.optim as optim
 import matplotlib.pyplot as plt
@@ -31,7 +32,13 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f'Training will be performed on {device}')
 
 # create a model to train and optimizer
-model = ActorCriticCrawler(params, 'crawler').to(device)
+# if given as an commandline argument a pretrained model is used a starting point
+use_pretrained_model = len(sys.argv) > 1
+model_name = sys.argv[1] if use_pretrained_model else 'crawler'
+
+model = ActorCriticCrawler(params, model_name).to(device)
+if use_pretrained_model: model.load()
+
 optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 
 # run the training loop
