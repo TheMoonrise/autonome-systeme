@@ -21,7 +21,7 @@ class ActorCriticCrawler(ActorCritic):
         super().__init__(params, name)
 
         self.hidden01 = 256
-        self.hidden02 = 64
+        self.hidden02 = 512
 
         self.net = nn.Sequential(
             nn.BatchNorm1d(params.inputs),
@@ -41,7 +41,6 @@ class ActorCriticCrawler(ActorCritic):
         self.actor_head_loc = nn.Sequential(
             nn.BatchNorm1d(self.hidden02),
             nn.Linear(self.hidden02, params.outputs),
-            nn.Tanh()
         )
 
         self.actor_head_scl = nn.Sequential(

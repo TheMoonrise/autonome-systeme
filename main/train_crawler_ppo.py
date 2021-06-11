@@ -19,12 +19,12 @@ params = Parameters(env.observation_space_size, env.action_space_size)
 params.training_iterations = 10_000
 params.clip = 0.2
 params.epochs = 10
-params.mini_batch_size = 20
+params.mini_batch_size = 64
 params.influence_critic = 0.5
 params.influence_entropy = 0.001
 params.gamma = 0.95
-params.lmbda = .99
-params.trace = 30
+params.lmbda = 1
+params.trace = 128
 params.learning_rate = 1e-5
 
 # check for cuda support
@@ -43,7 +43,7 @@ optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 
 # run the training loop
 train = TrainAndEvaluate(env, model)
-train.train(params, optimizer, device, 1000)
+train.train(params, optimizer, device, 100)
 
 # plot the results
 plt.plot(train.performance)
