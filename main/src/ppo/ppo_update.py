@@ -59,12 +59,12 @@ class Update:
             entropy = dist.entropy().mean()
             probs_new = dist.log_prob(actions)
 
-            ratio = (probs_new - probs_old).exp()
+            ratio = (probs_new - probs_old).exp().mean(dim=2)
             surr1 = ratio * advantages
             surr2 = torch.clamp(ratio, 1.0 - self.params.clip, 1.0 + self.params.clip) * advantages
 
             objc_actor = torch.min(surr1, surr2).mean()
-            loss_critic = (returns - values).pow(2).mean()
+            loss_critic = (returns - values.squeeze()).pow(2).mean()
 
             loss = -(objc_actor - self.params.influence_critic * loss_critic + self.params.influence_entropy * entropy)
 
