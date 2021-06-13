@@ -37,7 +37,7 @@ use_pretrained_model = len(sys.argv) > 1
 model_name = sys.argv[1] if use_pretrained_model else 'crawler'
 
 model = ActorCriticCrawler(params, model_name).to(device)
-if use_pretrained_model: model.load()
+if use_pretrained_model: model.load(device)
 
 optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 

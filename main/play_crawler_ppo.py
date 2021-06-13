@@ -15,7 +15,7 @@ params = Parameters(env.observation_space_size, env.action_space_size)
 
 # create a model and load the parameters
 # use the first commandline argument for the model if given
-model = ActorCriticCrawler(params, 'crawler-v0' if len(sys.argv) < 2 else sys.argv[1])
+model = ActorCriticCrawler(params, 'crawler-v1' if len(sys.argv) < 2 else sys.argv[1])
 model.load()
 
 # run the training loop
