@@ -20,36 +20,43 @@ class ActorCriticCrawler(ActorCritic):
         """
         super().__init__(params, name)
 
-        self.hidden01 = 64
-        self.hidden02 = 256
+        self.hidden01 = 256
+        self.hidden02 = 512
 
         self.net = nn.Sequential(
-            # nn.Linear(params.inputs, params.hidden01),
-            # nn.ReLU(),
+            nn.BatchNorm1d(params.inputs),
+            nn.Linear(params.inputs, self.hidden01),
+            nn.ReLU(),
         )
 
         self.actor = nn.Sequential(
-            nn.Linear(params.inputs, self.hidden01),
+            nn.BatchNorm1d(self.hidden01),
+            nn.Linear(self.hidden01, self.hidden01),
             nn.ReLU(),
+            nn.BatchNorm1d(self.hidden01),
             nn.Linear(self.hidden01, self.hidden02),
             nn.ReLU()
         )
 
         self.actor_head_loc = nn.Sequential(
+            # nn.BatchNorm1d(self.hidden02),
             nn.Linear(self.hidden02, params.outputs),
-            nn.Tanh()
         )
 
         self.actor_head_scl = nn.Sequential(
+            # nn.BatchNorm1d(self.hidden02),
             nn.Linear(self.hidden02, params.outputs),
             nn.Softplus()
         )
 
         self.critic = nn.Sequential(
-            nn.Linear(params.inputs, self.hidden01),
+            nn.BatchNorm1d(self.hidden01),
+            nn.Linear(self.hidden01, self.hidden01),
             nn.ReLU(),
+            nn.BatchNorm1d(self.hidden01),
             nn.Linear(self.hidden01, self.hidden02),
             nn.ReLU(),
+            # nn.BatchNorm1d(self.hidden02),
             nn.Linear(self.hidden02, 1)
         )
 
@@ -63,8 +70,7 @@ class ActorCriticCrawler(ActorCritic):
         x = self.net(x)
 
         act = self.actor(x)
-        # the action amplitude for the pendulum is 4
-        loc = self.actor_head_loc(act) * 2
+        loc = self.actor_head_loc(act)
         scl = self.actor_head_scl(act) + 1e-3
         dst = Normal(loc, scl)
 

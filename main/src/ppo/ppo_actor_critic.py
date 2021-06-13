@@ -33,11 +33,12 @@ class ActorCritic(nn.Module):
         path = os.path.join(directory, ActorCritic.model_directory_save, self.name + appendix)
         torch.save(self.state_dict(), path)
 
-    def load(self):
+    def load(self, device: str = 'cpu'):
         """
         Loads model parameters from the name of the model.
+        :param device: The device on which to run the model
         """
         directory = os.path.dirname(__file__)
         path = os.path.join(directory, ActorCritic.model_directory_load, self.name)
-        self.load_state_dict(torch.load(path))
+        self.load_state_dict(torch.load(path, map_location=device))
         self.eval()
