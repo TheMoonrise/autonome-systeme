@@ -7,10 +7,10 @@ from torch.distributions import Normal
 class ValueNetwork(nn.Module):
     def __init__(self, state_dim, hidden_dim, init_w=3e-3):
         """
-        Initializes the model.
-        :param state_dim: Dimension of each state.
-        :param hidden_dim: Dimension for the Networks hidden layers.
-        :param init_w: Default weight.
+        Initializes a Value Network.
+        :param state_dim: Dimension of the input layer (size of the observation space)
+        :param hidden_dim: Dimension for the networks hidden layer
+        :param init_w: Default weights for the network
         """
         super(ValueNetwork, self).__init__()
         
@@ -23,7 +23,8 @@ class ValueNetwork(nn.Module):
     
     def forward(self, state):
         """
-        TODO: Add comment
+        Forward propagation of the state through the value network
+        :param state: input state
         """
         x = F.relu(self.linear1(state))
         x = F.relu(self.linear2(x))
@@ -34,11 +35,11 @@ class ValueNetwork(nn.Module):
 class SoftQNetwork(nn.Module):
     def __init__(self, num_inputs, num_actions, hidden_size, init_w=3e-3):
         """
-        Initializes the model.
-        :param num_inputs:
-        :param num_actions:
-        :param hidden_size: Size for the Networks hidden layers.
-        :param init_w: Default weight.
+        Initializes the Soft Q Network.
+        :param num_inputs: size of the observation space
+        :param num_actions: size of the action space
+        :param hidden_size: Size for the networks hidden layers
+        :param init_w: initial values for the weights of the network
         """
         super(SoftQNetwork, self).__init__()
         
@@ -51,8 +52,9 @@ class SoftQNetwork(nn.Module):
   
     def forward(self, state, action):
         """
-        TODO: Add comment
-        """  
+        Forward propagation of the state through the q network
+        :param state: input state
+        """ 
         x = torch.cat([state, action], 1)
         x = F.relu(self.linear1(x))
         x = F.relu(self.linear2(x))
@@ -65,13 +67,13 @@ class PolicyNetwork(nn.Module):
     
     def __init__(self, num_inputs, num_actions, hidden_size, name: str, device, init_w=3e-3, log_std_min=-20, log_std_max=2):
         """
-        Initializes the model.
-        :param num_inputs:
-        :param num_actions:
-        :param hidden_size: Size for the Networks hidden layers.
-        :param init_w:
-        :param log_std_min:
-        :param log_std_max:
+        Initializes the Policy Network.
+        :param num_inputs: size of the observation space
+        :param num_actions: size of the action space
+        :param hidden_size: Size for the networks hidden layers
+        :param init_w: initial values for the weights of the network
+        :param log_std_min: min value for the log standard deviation so that it is in a reasonable size
+        :param log_std_max: max value for the log standard deviation so that it is in a reasonable size
         """
         super(PolicyNetwork, self).__init__()
 
@@ -95,7 +97,8 @@ class PolicyNetwork(nn.Module):
 
     def forward(self, state):
         """
-        TODO: Add comment
+        Forward propagation of the state through the policy network
+        :param state: input state
         """
         x = F.relu(self.linear1(state))
         x = F.relu(self.linear2(x))
@@ -108,7 +111,10 @@ class PolicyNetwork(nn.Module):
     
     def evaluate(self, state, epsilon=1e-6):
         """
-        TODO: Add comment
+        evaluates the policy based on the current state 
+        :param state: current state
+        :param epsilon: 
+        :returns: set of parameters for the policy network update
         """
         # calculate Gaussian distribusion of (mean, log_std)
         mean, log_std = self.forward(state)
@@ -117,14 +123,18 @@ class PolicyNetwork(nn.Module):
         normal = Normal(0, 1)
         z      = normal.sample()
         action = torch.tanh(mean+ std*z.to(self.device))
+        
         # calculate entropies
         log_prob = Normal(mean, std).log_prob(mean+ std*z.to(self.device)) - torch.log(1 - action.pow(2) + epsilon)
         return action, log_prob, z, mean, log_std
         
     def get_action(self, state):
         """
-        Returns the action based on a squashed gaussian policy. That means the samples are obtained according to:
+        Returns the action based on a squashed gaussian policy.
+        That means the samples are obtained according to:
             a(s,e)= tanh(mu(s)+sigma(s)+e)
+        :param state: current state for which an action should be chosen
+        :returns: returns the chosen action
         """
         state = torch.FloatTensor(state).unsqueeze(0).to(self.device)
         # calculate Gaussian distribusion of (mean, log_std)
@@ -142,7 +152,7 @@ class PolicyNetwork(nn.Module):
     def save(self, appendix: str = ''):
         """
         Saves the current model parameters to file.
-        :param appendix: An appendix to add to the file name of the model.
+        :param appendix: An appendix to add to the file name of the model
         """
         directory = os.path.dirname(__file__)
         path = os.path.join(directory, PolicyNetwork.model_directory_save, self.name + appendix)

@@ -65,7 +65,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ml-agents": {
-      "version": "file:C:/Users/tamun/Downloads/ml-agents-main/ml-agents-main/com.unity.ml-agents",
+      "version": "file:C:/Users/veren/Downloads/ml-agents-main/ml-agents-main/com.unity.ml-agents",
       "depth": 0,
       "source": "local",
       "dependencies": {
@@ -75,7 +75,7 @@
       }
     },
     "com.unity.ml-agents.extensions": {
-      "version": "file:C:/Users/tamun/Downloads/ml-agents-main/ml-agents-main/com.unity.ml-agents.extensions",
+      "version": "file:C:/Users/veren/Downloads/ml-agents-main/ml-agents-main/com.unity.ml-agents.extensions",
       "depth": 0,
       "source": "local",
       "dependencies": {

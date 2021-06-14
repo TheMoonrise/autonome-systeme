@@ -19,11 +19,11 @@ class ReplayBuffer:
     def push(self, state, action, reward, next_state, done):
         """
         Adds a new experience to memory.
-        :param state:
-        :param action:
-        :param reward:
-        :param next_state:
-        :param done:
+        :param state: current state
+        :param action: chosen action
+        :param reward: obtained reward
+        :param next_state: new state after the action was executed
+        :param done: flag that indicates if the episode has reached a terminal state
         """
         if len(self.buffer) < self.capacity:
             self.buffer.append(None)
@@ -33,7 +33,8 @@ class ReplayBuffer:
     def sample(self, batch_size):
         """
         Randomly sample a batch of experiences from memory.
-        :param batch_size: Maximum size of buffer.
+        :param batch_size: Maximum size of the replay buffer.
+        :returns: random sample from the buffer
         """
         batch = random.sample(self.buffer, batch_size)
         state, action, reward, next_state, done = map(np.stack, zip(*batch))
@@ -41,7 +42,7 @@ class ReplayBuffer:
     
     def __len__(self):
         """
-        Returns length of buffer.
+        Returns length of the replay buffer.
         """
         return len(self.buffer)
 
@@ -49,7 +50,10 @@ class NormalizedActions(gym.ActionWrapper):
     
     def action(self, action):
         """
-        TODO: add comment
+        returns the corresponding action from the normalized action space
+        :param action: chosen action
+        :returns: 
+        TODO: check if correct
         """
         low  = self.action_space.low
         high = self.action_space.high
@@ -61,7 +65,10 @@ class NormalizedActions(gym.ActionWrapper):
     
     def reverse_action(self, action):
         """
-        TODO: add comment
+        returns the 
+        :param action:
+        :returns: 
+        TODO: check if correct
         """
         low  = self.action_space.low
         high = self.action_space.high

@@ -40,7 +40,7 @@ class Parameters:
 
         # training parameters
         # Maximum training steps
-        self.max_frames = 40000
+        self.max_frames = 4000
 
         # Maximum steps per episode
         self.max_steps = 500

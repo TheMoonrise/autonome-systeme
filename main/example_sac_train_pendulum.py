@@ -108,7 +108,7 @@ def sac_train():
             if len(replay_buffer) > batch_size:
                 sac_update(batch_size, gamma, soft_tau)
             
-            if frame_idx % 100 == 0:
+            if frame_idx % 500 == 0:
                 print('Epoch:{}, episode reward is {}'.format(frame_idx, episode_reward))
                 policy_net.save(f'{frame_idx}')
                 # plot(frame_idx, rewards)
@@ -120,7 +120,10 @@ def sac_train():
 
 def sac_update(batch_size,gamma,soft_tau):
     """
-    TODO: add comment
+    method that updates the two q functions, the value function and the policy function
+    :param batch_size: batch size that is used for the update
+    :param gamma: discount factor applied to the rewards
+    :param soft_tau: soft update coefficient for the target network
     """
     
     state, action, reward, next_state, done = replay_buffer.sample(batch_size)

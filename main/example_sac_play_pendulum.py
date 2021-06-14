@@ -1,5 +1,5 @@
-from main.src.sac.sac_actor_critic import PolicyNetwork
-from main.src.sac.sac_functions import NormalizedActions
+from src.sac.sac_actor_critic import PolicyNetwork
+from src.sac.sac_functions import NormalizedActions
 import gym
 import torch
 
@@ -13,9 +13,11 @@ env = NormalizedActions(gym.make("Pendulum-v0"))
 action_dim = env.action_space.shape[0]
 state_dim  = env.observation_space.shape[0]
 
-policy_net = PolicyNetwork(state_dim, action_dim, hidden_dim).to(device)
+name = "testrun"
 
-policy_net.load_state_dict(torch.load('sac-policy.pth', map_location=device))
+policy_net = PolicyNetwork(state_dim, action_dim, hidden_dim, name, device).to(device)
+
+policy_net.load_state_dict(torch.load('../models/sac/temp/pendulum4000', map_location=device))
 policy_net.eval()
 
 reward_mean = 0
