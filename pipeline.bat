@@ -1,5 +1,5 @@
 @echo off
 echo Running Flake8 (Linting)
-py -m flake8 main
+py -m flake8 "%~dp0\main"
 echo Running PyTest (Unit Testing)
-py -m pytest main
+py -m pytest "%~dp0\main"
