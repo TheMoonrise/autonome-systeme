@@ -17,13 +17,16 @@ class Domain:
         Provides the build path of the domain executable.
         :returns: The absolute path to the build executable and whether the environment window should be hidden.
         """
-        folder, extension, hidden = None, None, False
-        if (platform.system() == 'Windows'): folder, extension = "windows", "exe"
+        folder, extension, hidden = None, None, True
+
+        if (platform.system() == 'Windows'): folder, extension = 'windows', '.exe'
+        if (platform.system() == 'Darwin'): folder, extension = 'mac', '.app'
+        if (platform.system() == 'Linux'): folder, extension = 'linux', '.x86_64'
 
         if not folder: raise Exception('ML domain not configured for the current operating system')
 
         dirname = os.path.dirname(__file__)
-        path = os.path.join(dirname, '../../../environment', folder, f'Crawler.{extension}')
+        path = os.path.join(dirname, '../../../environment', folder, f'Crawler{extension}')
         return path, hidden
 
     def environment(self):
