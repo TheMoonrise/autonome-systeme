@@ -200,3 +200,4 @@ crashlytics-build.properties
 .vscode/
 
 # Others
+.idea 
