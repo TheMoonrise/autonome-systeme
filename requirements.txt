@@ -4,5 +4,8 @@ torchaudio==0.8.1
 torchvision==0.9.1
 gym==0.18.3
 matplotlib
+flake8==3.9.2
+pytest=6.2.4
+
 
 

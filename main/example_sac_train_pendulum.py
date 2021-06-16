@@ -15,7 +15,8 @@ from src.sac.sac_parameters import Parameters
 model_name = 'pendulum'
 
 use_cuda = torch.cuda.is_available()
-device   = torch.device("cuda" if use_cuda else "cpu")
+device = torch.device("cuda" if use_cuda else "cpu")
+
 
 def plot(frame_idx, rewards):
     clear_output(True)
@@ -75,6 +76,7 @@ policy_optimizer = optim.Adam(policy_net.parameters(), lr=policy_lr)
 
 replay_buffer = ReplayBuffer(replay_buffer_size)
 
+
 def sac_train():
     """
     Initiates training loop.
@@ -110,7 +112,7 @@ def sac_train():
 
             if done:
                 break
- 
+
         rewards.append(episode_reward)
 
 
@@ -146,7 +148,8 @@ def sac_update(batch_size, gamma, soft_tau):
     soft_q_optimizer1.step()
     soft_q_optimizer2.zero_grad()
     q_value_loss2.backward()
-    soft_q_optimizer2.step()  
+    soft_q_optimizer2.step()
+
 # Training Value Function
     predicted_new_q_value = torch.min(soft_q_net1(state, new_action), soft_q_net2(state, new_action))
     target_value_func = predicted_new_q_value - log_prob
@@ -171,4 +174,3 @@ def sac_update(batch_size, gamma, soft_tau):
 
 # Start Training
 sac_train()
-

@@ -1,8 +1,7 @@
 """Container for holding training hyperparameters"""
 
+
 class Parameters:
-
-
     """Holds parameters for sac training"""
     def __init__(self, inputs: int, outputs: int):
         """

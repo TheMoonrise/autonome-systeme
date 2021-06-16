@@ -4,9 +4,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Normal
 
+
 class ValueNetwork(nn.Module):
-
-
     def __init__(self, state_dim, hidden_dim, init_w=3e-3):
         """
         Initializes a Value Network.
@@ -66,7 +65,6 @@ class SoftQNetwork(nn.Module):
 
 class PolicyNetwork(nn.Module):
 
-
     model_directory_save = "../../../models/sac/temp"
 
     def __init__(self, num_inputs, num_actions, hidden_size, name: str, device, init_w=3e-3, log_std_min=-20, log_std_max=2):
@@ -99,7 +97,6 @@ class PolicyNetwork(nn.Module):
         self.log_std_linear.weight.data.uniform_(-init_w, init_w)
         self.log_std_linear.bias.data.uniform_(-init_w, init_w)
 
-
     def forward(self, state):
         """
         Forward propagation of the state through the policy network
@@ -114,12 +111,11 @@ class PolicyNetwork(nn.Module):
 
         return mean, log_std
 
-
     def evaluate(self, state, epsilon=1e-6):
         """
-        evaluates the policy based on the current state 
+        evaluates the policy based on the current state
         :param state: current state
-        :param epsilon: 
+        :param epsilon:
         :returns: set of parameters for the policy network update
         """
         # calculate Gaussian distribusion of (mean, log_std)
@@ -152,9 +148,8 @@ class PolicyNetwork(nn.Module):
         z = normal.sample().to(self.device)
         action = torch.tanh(mean + std * z)
 
-        action = action.cpu() # .detach().cpu().numpy()
+        action = action.cpu()  # .detach().cpu().numpy()
         return action[0]
-
 
     def save(self, appendix: str = ''):
         """

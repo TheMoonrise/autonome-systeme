@@ -6,8 +6,9 @@ import numpy as np
 """
 Fixed-size buffer to store experience tuples.
 """
-class ReplayBuffer:
 
+
+class ReplayBuffer:
     def __init__(self, capacity):
         """
         Initializes the the ReplayBuffer object.
@@ -59,17 +60,17 @@ class NormalizedActions(gym.ActionWrapper):
         """
         low = self.action_space.low
         high = self.action_space.high
-        
+
         action = low + (action + 1.0) * 0.5 * (high - low)
         action = np.clip(action, low, high)
-        
+
         return action
 
     def reverse_action(self, action):
         """
-        returns the 
+        returns the
         :param action:
-        :returns: 
+        :returns:
         TODO: check if correct
         """
         low = self.action_space.low
