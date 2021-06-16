@@ -38,23 +38,6 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f'Training will be performed on {device}')
 
 # create a model to train and optimizer
-# if given as an commandline argument a pretrained model is used a starting point
-"""use_pretrained_model = len(sys.argv) > 1
-model_name = sys.argv[1] if use_pretrained_model else 'crawler'
-
-model = ActorCriticCrawler(params, model_name).to(device)
-if use_pretrained_model: model.load(device)
-
-optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
-
-# run the training loop
-train = TrainAndEvaluate(env, model)
-train.train(params, optimizer, device, 500)
-
-# plot the results
-plt.plot(train.performance)
-plt.show()"""
-
 model_name = 'crawler'
 
 value_net        = ValueNetwork(inputs, hidden_dim).to(device)
@@ -99,8 +82,14 @@ def sac_train():
                 #print("action", policy_net.get_action(state).detach())
                 #print("--------------------")
                 action = policy_net.get_action(state).detach()
+                print("--------------------")
+                print("action before: ", action.shape)
+                action = [i[0:10] for i in action]
+                action = torch.FloatTensor(action) # ValueError: only one element tensors can be converted to Python scalars
+                print("action after: ", action[0]) # DO I have to convert action into sth?
+                print("--------------------")
                 #action = env.action_space
-                next_state, reward, done, _ = env.step(action.numpy())
+                next_state, reward, done, _ = env.step(action)
             
             replay_buffer.push(state, action, reward, next_state, done)
             
@@ -117,7 +106,7 @@ def sac_train():
                 # plot(frame_idx, rewards)
             
             if done[0]:
-                break # ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+                break
             
         rewards.append(episode_reward)
 
