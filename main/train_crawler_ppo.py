@@ -16,6 +16,9 @@ env = CrawlerWrapper(env)
 # define the hyper parameters
 params = Parameters(env.observation_space_size, env.action_space_size)
 
+# here we can maybe randomize some of the parameters and log the values to mlflow
+# maybe we do actually want to allow passing a json file that holds the parameters
+# so the options could be: random parameters, if nothing is passed; json values, if a file is passed
 params.training_iterations = 10_000
 params.clip = 0.2
 params.epochs = 10
