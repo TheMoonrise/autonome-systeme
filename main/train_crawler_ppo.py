@@ -44,6 +44,7 @@ for run in range(args.runs):
 
     optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 
+<<<<<<< HEAD
     # start mlflow run 
     # if no run is active methods like mlflow.log_param will create a new run
     # a run is autometically closed when the with statement exits
@@ -83,6 +84,11 @@ for run in range(args.runs):
 
         # log plot
         # mlflow.log_artifact(fig_path)
+=======
+    # run the training loop
+    train = TrainAndEvaluate(env, model)
+    train.train(params, optimizer, device, 500)
+>>>>>>> main
 
         plt.show()
         
