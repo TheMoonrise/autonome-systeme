@@ -83,5 +83,5 @@ class Update:
             loss.backward()
             optimizer.step()
 
-        avg_loss = sum(total_loss)/len(total_loss)
+        avg_loss = sum(total_loss) / len(total_loss)
         mlflow.log_metric('loss', avg_loss)
