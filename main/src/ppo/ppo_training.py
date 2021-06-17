@@ -50,6 +50,7 @@ class TrainAndEvaluate():
         :param device: String property naming the device used for training.
         :param save_interval: The interval at which to save the current model.
         """
+
         self.state = self.env.reset()
         self.done = [False]
 

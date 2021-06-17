@@ -196,3 +196,6 @@ crashlytics-build.properties
 [Tt]imers/
 
 .vscode/
+
+# Others
+.idea 
