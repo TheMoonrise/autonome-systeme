@@ -1,5 +1,6 @@
 """Provides functionality to update a model with given traces"""
 
+import mlflow
 import torch
 import numpy as np
 
@@ -52,6 +53,9 @@ class Update:
         :param optimizer: The optimizer used for improving the model.
         :param model: The ppo actor critic model being optimized.
         """
+
+        total_loss = []
+
         for _ in range(self.params.epochs):
             states, actions, probs_old, returns, advantages = self._mini_batch()
 
@@ -73,7 +77,11 @@ class Update:
             loss_critic = (returns - values).pow(2).mean()
 
             loss = -(objc_actor - self.params.influence_critic * loss_critic + self.params.influence_entropy * entropy)
+            total_loss.append(loss.item())
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+
+        avg_loss = sum(total_loss) / len(total_loss)
+        mlflow.log_metric('loss', avg_loss)

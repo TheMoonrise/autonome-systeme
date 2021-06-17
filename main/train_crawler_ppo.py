@@ -1,7 +1,8 @@
 import torch
 import torch.optim as optim
-import matplotlib.pyplot as plt
 from argparse import ArgumentParser
+import mlflow
+from dotenv import load_dotenv
 
 from src.ppo.ppo_parameters import Parameters
 from src.ppo.ppo_actor_critic_crawler import ActorCriticCrawler
@@ -18,6 +19,9 @@ args = parser.parse_args()
 # create a crawler environment and wrap it in the gym wrapper
 env = Domain().environment()
 env = CrawlerWrapper(env)
+
+# load environment variables
+load_dotenv()
 
 for run in range(args.runs):
     # define the hyper parameters
@@ -38,10 +42,34 @@ for run in range(args.runs):
 
     optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 
-    # run the training loop
-    train = TrainAndEvaluate(env, model)
-    train.train(params, optimizer, device, 500)
+    # start mlflow run
+    # if no run is active methods like mlflow.log_param will create a new run
+    # a run is autometically closed when the with statement exits
+    with mlflow.start_run() as run:
+        print('Running mlflow.')
 
-# plot the results
-plt.plot(train.performance)
-plt.show()
+        # for returning informaton about the run
+        client = mlflow.tracking.MlflowClient()
+        print('Currently active run: ', client.get_run(mlflow.active_run().info.run_id).data)
+
+        print('Tracking server: ', mlflow.tracking.get_tracking_uri())
+
+        # creating an mlflow experiment
+        # exp_id = mlflow.create_experiment('PPO')
+        # print('Experiment id: ', exp_id)
+
+        # log params, key and value are both strings
+        mlflow.log_param('training iterations', params.training_iterations)
+        mlflow.log_param('clip', params.clip)
+        mlflow.log_param('epochs', params.epochs)
+        mlflow.log_param('mini batch size', params.mini_batch_size)
+        mlflow.log_param('influence critic', params.influence_critic)
+        mlflow.log_param('influence entropy', params.influence_entropy)
+        mlflow.log_param('gamma', params.gamma)
+        mlflow.log_param('lambda', params.lmbda)
+        mlflow.log_param('trace', params.trace)
+        mlflow.log_param('learning rate', params.learning_rate)
+
+        # run the training loop
+        train = TrainAndEvaluate(env, model)
+        train.train(params, optimizer, device, 500)
