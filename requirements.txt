@@ -2,6 +2,6 @@
 torch==1.8.1
 torchaudio==0.8.1
 torchvision==0.9.1
-ipython
+gym==0.18.3
 matplotlib
-tensorboardX
+flake8==3.8
