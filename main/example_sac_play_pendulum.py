@@ -5,13 +5,14 @@ import torch
 
 hidden_dim = 256
 use_cuda = torch.cuda.is_available()
-device   = torch.device("cuda" if use_cuda else "cpu")
+device = torch.device("cuda" if use_cuda else "cpu")
 
 
 env = NormalizedActions(gym.make("Pendulum-v0"))
 
+
 action_dim = env.action_space.shape[0]
-state_dim  = env.observation_space.shape[0]
+state_dim = env.observation_space.shape[0]
 
 name = "testrun"
 

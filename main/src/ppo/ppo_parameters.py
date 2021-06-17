@@ -1,8 +1,14 @@
 """Container for holding training hyperparameters"""
 
+import json
+import os
+import numpy as np
+
 
 class Parameters:
     """Holds parameters for ppo training"""
+
+    params_directory = "../../../params/ppo"
 
     def __init__(self, inputs: int, outputs: int):
         """
@@ -51,3 +57,19 @@ class Parameters:
 
         # the learning rate of the optimizer
         self.learning_rate = 1e-5
+
+    def load(self, file_name: str):
+        dirname = os.path.dirname(__file__)
+        with open(os.path.join(dirname, Parameters.params_directory, file_name)) as file:
+            params_dict = json.loads(file.read())
+
+        for key in self.__dict__:
+            if key in params_dict:
+                self.__dict__[key] = params_dict[key]
+            key_range = f"{key}_range"
+
+            if key_range in params_dict:
+                self.__dict__[key] = np.random.uniform(*params_dict[key_range])
+
+        self.trace = int(self.trace)
+        self.training_iterations = int(self.training_iterations)

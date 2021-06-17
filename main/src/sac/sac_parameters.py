@@ -1,5 +1,6 @@
 """Container for holding training hyperparameters"""
 
+
 class Parameters:
     """Holds parameters for sac training"""
     def __init__(self, inputs: int, outputs: int):
@@ -9,7 +10,6 @@ class Parameters:
         :param inputs: The size on the input layer of the actor critic network.
         :param outputs: The size of the output layer of actions.
         """
-
         # actor critic parameters
         # the size of the state inputs
         self.inputs = inputs
@@ -21,7 +21,7 @@ class Parameters:
         self.hidden_dim = 256
 
         # Learning rates for each network
-        self.value_lr  = 3e-4
+        self.value_lr = 3e-4
         self.soft_q_lr = 3e-4
         self.policy_lr = 3e-4
 
@@ -30,13 +30,13 @@ class Parameters:
         self.replay_buffer_size = 1000000
 
         # Size of the batch that is used for the update
-        self.batch_size  = 128
+        self.batch_size = 128
 
         # the soft update coefficient (“polyak update”, between 0 and 1) for the target network
-        self.soft_tau=1e-2
+        self.soft_tau = 1e-2
 
         # the discount factor applied to the rewards in each timestep
-        self.gamma=0.99
+        self.gamma = 0.99
 
         # training parameters
         # Maximum training steps
@@ -44,10 +44,3 @@ class Parameters:
 
         # Maximum steps per episode
         self.max_steps = 500
-
-        
-
-        
-
-        
-

@@ -1,5 +1,6 @@
 """Handles training and evaluation of ppo networks"""
 
+import mlflow
 import torch
 import numpy as np
 
@@ -50,6 +51,7 @@ class TrainAndEvaluate():
         :param device: String property naming the device used for training.
         :param save_interval: The interval at which to save the current model.
         """
+
         self.state = self.env.reset()
         self.done = [False]
 
@@ -83,6 +85,8 @@ class TrainAndEvaluate():
             if save_interval > 0 and (i % save_interval == 0 or i == params.training_iterations):
                 appendix = f'[{i:0>4}({performance:.0f})]'
                 self.model.save(appendix)
+                # log model in mlflow
+                mlflow.pytorch.log_model(self.model, appendix)
 
     def evaluate(self, render: bool):
         """
@@ -145,6 +149,8 @@ class TrainAndEvaluate():
 
             if self.done[0]:
                 self.performance.append(self.performance_counter)
+                # log performance as metric
+                mlflow.log_metric('performance', self.performance_counter)
                 self.performance_counter = 0
 
     def _clear_trace(self):
