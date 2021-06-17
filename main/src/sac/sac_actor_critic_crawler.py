@@ -109,6 +109,7 @@ class PolicyNetwork(nn.Module):
         log_std = self.log_std_linear(x)
         log_std = torch.clamp(log_std, self.log_std_min, self.log_std_max)
 
+        # mean and log_std have torch.Size([1, 10, 20])
         return mean, log_std
 
     def evaluate(self, state, epsilon=1e-6):
@@ -124,7 +125,7 @@ class PolicyNetwork(nn.Module):
         mean, log_std = self.forward(state)
         std = log_std.exp()
 
-        normal = Normal(0, 1)
+        normal = Normal(mean, std)
         z = normal.sample()
         action = torch.tanh(mean + std * z.to(self.device))
 

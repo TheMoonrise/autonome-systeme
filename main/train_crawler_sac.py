@@ -45,6 +45,10 @@ soft_q_net2 = SoftQNetwork(inputs, outputs, hidden_dim).to(device)
 
 policy_net = PolicyNetwork(inputs, outputs, hidden_dim, model_name, device).to(device)
 
+"""
+value_net: PyTorch model (weights will be copied from)
+target_value_net: PyTorch model (weights will be copied to)
+"""
 for target_param, param in zip(target_value_net.parameters(), value_net.parameters()):
     target_param.data.copy_(param.data)
 
@@ -81,27 +85,27 @@ def sac_train():
                 next_state, reward, done, _ = env.step(action.numpy())
             else:
                 action = policy_net.get_action(state).detach()
-                # action = np.random.uniform(low=np.nextafter(-1.0, 0.0), high=1.0, size=(10, 10))  # UnityActionException: The behavior Crawler?team=0 needs a continuous input of dimension (10, 20) for (<number of agents>, <action size>) but received input of dimension (10, 10)
+                # action = np.random.uniform(low=np.nextafter(-1.0, 0.0), high=1.0, size=(10, 10))
                 next_state, reward, done, _ = env.step(action.numpy())
                 # next_state, reward, done, _ = env.step(action)
 
             replay_buffer.push(state, action, reward, next_state, done)
-            
+
             state = next_state
             episode_reward += reward
             frame_idx += 1
-            
+
             if len(replay_buffer) > batch_size:
                 sac_update(batch_size, gamma, soft_tau)
-            
+
             if frame_idx % 100 == 0:
                 print('Epoch:{}, episode reward is {}'.format(frame_idx, episode_reward))
                 policy_net.save(f'{frame_idx}')
                 # plot(frame_idx, rewards)
-            
+
             if done[0]:
                 break
-            
+
         rewards.append(episode_reward)
 
 
@@ -137,10 +141,17 @@ def sac_update(batch_size, gamma, soft_tau):
     # target_value has torch.Size([128, 10, 1])
     target_value = target_value_net(next_state)
     # Calculate the actual value of the SQN
-    # reward and done have torch.Size([128, 1, 10]), HACK: select first element to make them one dimensional
-    target_q_value = reward[0][0][0] + (1 - done[0][0][0]) * gamma * target_value
+    # reward and done have torch.Size([128, 1, 10])
+    # FIRST HACK: Swap 2nd and 3rd dimension
+    reward = reward.transpose(1, 2)
+    done = done.transpose(1, 2)
+
+    # SECOND HACK: select only first element to make them one dimensional
+    # target_q_value = reward[0][0][0] + (1 - done[0][0][0]) * gamma * target_value
+
+    target_q_value = reward + (1 - done) * gamma * target_value
     # Calculate the loss between the predicted and the actual value of SQN
-    # without HACK: this returns a warning bc predicted_q_value1 128, 10, 1 and target_q_value 128, 10, 10
+    # without HACK: this returns a warning bc predicted_q_value1 128, 10, 1 and target_q_value would have 128, 10, 10
     q_value_loss1 = soft_q_criterion1(predicted_q_value1, target_q_value.detach())
 
     q_value_loss2 = soft_q_criterion2(predicted_q_value2, target_q_value.detach())
@@ -156,10 +167,17 @@ def sac_update(batch_size, gamma, soft_tau):
 
 # Training Value Function
     # predicted_new_q_value size 128, 10, 1
+    # new_action size 128, 10, 20
+    # state size 128, 10, 158
+    # Choose minimum between model 1 and model 2 Q-value for agent
     predicted_new_q_value = torch.min(soft_q_net1(state, new_action), soft_q_net2(state, new_action))
     # target_value_func size 128, 10, 20
+    # log_prob size 128, 10, 20
     target_value_func = predicted_new_q_value - log_prob
-    # this returns a warning bc predicted_value 128, 10, 1 and target_value_func 128, 10, 20
+    # HACK: reshape predicted_value
+    reshape_v = torch.zeros(128, 10, 20)
+    predicted_value = predicted_value - reshape_v
+    # without HACK: returns a warning bc predicted_value 128, 10, 1 and target_value_func 128, 10, 20
     value_loss = value_criterion(predicted_value, target_value_func.detach())
 
     value_optimizer.zero_grad()
