@@ -40,7 +40,7 @@ for run in range(args.runs):
 
     # run the training loop
     train = TrainAndEvaluate(env, model)
-    train.train(params, optimizer, device, 500, runs=args.runs)
+    train.train(params, optimizer, device, 500)
 
 # plot the results
 plt.plot(train.performance)
