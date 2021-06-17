@@ -70,3 +70,6 @@ class Parameters:
 
             if key_range in params_dict:
                 self.__dict__[key] = np.random.uniform(*params_dict[key_range])
+
+        self.trace = int(self.trace)
+        self.training_iterations = int(self.training_iterations)
