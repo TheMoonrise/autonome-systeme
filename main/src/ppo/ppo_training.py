@@ -42,7 +42,7 @@ class TrainAndEvaluate():
         self.performance = []
         self.performance_counter = 0
 
-    def train(self, params: Parameters, optimizer: Optimizer, device: str, save_interval: int = -1):
+    def train(self, params: Parameters, optimizer: Optimizer, device: str, save_interval: int = -1, runs: int = 1, random_parameters: bool = False):
         """
         Performs a ppo training loop on the given model and environment.
         :param params: The parameters used for the training.
@@ -50,6 +50,7 @@ class TrainAndEvaluate():
         :param device: String property naming the device used for training.
         :param save_interval: The interval at which to save the current model.
         """
+        print(runs)
         self.state = self.env.reset()
         self.done = [False]
 

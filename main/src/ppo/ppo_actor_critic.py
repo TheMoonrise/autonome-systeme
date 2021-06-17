@@ -39,6 +39,7 @@ class ActorCritic(nn.Module):
         :param device: The device on which to run the model
         """
         directory = os.path.dirname(__file__)
+        print(directory)
         path = os.path.join(directory, ActorCritic.model_directory_load, self.name)
         self.load_state_dict(torch.load(path, map_location=device))
         self.eval()
