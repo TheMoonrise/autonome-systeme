@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Normal
 
+
 class ValueNetwork(nn.Module):
     def __init__(self, state_dim, hidden_dim, init_w=3e-3):
         """
@@ -13,25 +14,33 @@ class ValueNetwork(nn.Module):
         :param init_w: Default weights for the network
         """
         super(ValueNetwork, self).__init__()
-        
+        # Ceating the 3 linear layers of our neural network
+        # Gets the array state_dim in length and outputs one with hidden_dim in length
         self.linear1 = nn.Linear(state_dim, hidden_dim)
+        # Gets the array hidden_dim in length and outputs one with hidden_dim in length
         self.linear2 = nn.Linear(hidden_dim, hidden_dim)
+        # Gets the array hidden_dim in length and outputs one with 1 in length
         self.linear3 = nn.Linear(hidden_dim, 1)
-        
+
+        # Initializes the weights for linear3
         self.linear3.weight.data.uniform_(-init_w, init_w)
+        # Initializes the bias for linear3
         self.linear3.bias.data.uniform_(-init_w, init_w)
-    
+
     def forward(self, state):
         """
         Forward propagation of the state through the value network
         :param state: input state
         """
+        # Apply the  RELU activation function on the layer output of linear1
         x = F.relu(self.linear1(state))
+        # Apply the  RELU activation function on the layer output of linear2
         x = F.relu(self.linear2(x))
+        # Passing the array within the lastest linear layer linear3
         x = self.linear3(x)
         return x
-        
-        
+
+
 class SoftQNetwork(nn.Module):
     def __init__(self, num_inputs, num_actions, hidden_size, init_w=3e-3):
         """
@@ -42,26 +51,26 @@ class SoftQNetwork(nn.Module):
         :param init_w: initial values for the weights of the network
         """
         super(SoftQNetwork, self).__init__()
-        
-        self.linear1 = nn.Linear(num_inputs + num_actions, hidden_size)
+
+        self.linear1 = nn.Linear(num_inputs + num_actions, hidden_size) 
         self.linear2 = nn.Linear(hidden_size, hidden_size)
         self.linear3 = nn.Linear(hidden_size, 1)
-        
+
         self.linear3.weight.data.uniform_(-init_w, init_w)
         self.linear3.bias.data.uniform_(-init_w, init_w)
-  
+
     def forward(self, state, action):
         """
         Forward propagation of the state through the q network
         :param state: input state
-        """ 
+        """
         x = torch.cat([state, action], 1)
         x = F.relu(self.linear1(x))
         x = F.relu(self.linear2(x))
         x = self.linear3(x)
         return x
-        
-        
+
+
 class PolicyNetwork(nn.Module):
     model_directory_save = "../../../models/sac/temp"
     
@@ -117,6 +126,8 @@ class PolicyNetwork(nn.Module):
         :returns: set of parameters for the policy network update
         """
         # calculate Gaussian distribusion of (mean, log_std)
+        # state has torch.Size([128, 3])
+        # mean, log_std torch.Size([128, 1]) because policy_net has 1 num_action
         mean, log_std = self.forward(state)
         std = log_std.exp()
         
@@ -126,6 +137,7 @@ class PolicyNetwork(nn.Module):
         
         # calculate entropies
         log_prob = Normal(mean, std).log_prob(mean+ std*z.to(self.device)) - torch.log(1 - action.pow(2) + epsilon)
+        # action and log_prob have torch.Size([128, 1])
         return action, log_prob, z, mean, log_std
         
     def get_action(self, state):

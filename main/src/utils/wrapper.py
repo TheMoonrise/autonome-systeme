@@ -34,7 +34,8 @@ class CrawlerWrapper:
         # this is the alternative to env.observation_space.shape[0] used on regular gym environments
         self.observation_space_size = sum([x.shape[0] for x in behaviour_specs.observation_specs])
         self.action_space_size = behaviour_specs.action_spec.continuous_size
-        
+
+        # self.action_space = self.env.vector_action_descriptions
 
     def render(self):
         """
