@@ -3,6 +3,7 @@ import torch.optim as optim
 import torch.nn as nn
 import numpy as np
 import mlflow
+from dotenv import load_dotenv
 
 from src.sac.sac_parameters import Parameters
 from src.sac.sac_actor_critic_crawler import ValueNetwork, SoftQNetwork, PolicyNetwork
@@ -13,6 +14,9 @@ from src.utils.wrapper import CrawlerWrapper
 # create a crawler environment and wrap it in the gym wrapper
 env = Domain().environment()
 env = CrawlerWrapper(env)
+
+# load environment variables
+load_dotenv()
 
 # define the hyper parameters
 params = Parameters(env.observation_space_size, env.action_space_size)
@@ -202,7 +206,7 @@ def sac_update(batch_size, gamma, soft_tau):
 # start mlflow run
 # if no run is active methods like mlflow.log_param will create a new run
 # a run is autometically closed when the with statement exits
-with mlflow.start_run() as run:
+with mlflow.start_run(run_name='sac') as run:
     print('Running mlflow.')
 
     # for returning informaton about the run
