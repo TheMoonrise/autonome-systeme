@@ -71,6 +71,11 @@ class ActorCriticCrawler(ActorCritic):
 
         act = self.actor(x)
         loc = self.actor_head_loc(act)
+
+        if torch.any(torch.isnan(loc)):
+            print('Model parameter "loc" contains nan values')
+            loc = torch.nan_to_num(loc)
+
         scl = self.actor_head_scl(act) + 1e-3
         dst = Normal(loc, scl)
 

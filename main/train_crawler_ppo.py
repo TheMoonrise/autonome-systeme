@@ -52,9 +52,14 @@ for run in range(args.runs):
         print('Starting mlflow run')
         params.log_to_mlflow()
 
-        # run the training loop
-        train = TrainAndEvaluate(env, model)
-        train.train(params, optimizer, device, 2500)
+        try:
+            # run the training loop
+            train = TrainAndEvaluate(env, model)
+            train.train(params, optimizer, device, 2500)
+
+        except Exception as e:
+            print('Training ended prematurely')
+            print(e)
 
         # generate some graphics and save them to mlflow
         with tempfile.TemporaryDirectory() as dir:
