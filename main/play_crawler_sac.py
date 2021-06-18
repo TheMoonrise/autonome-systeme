@@ -7,11 +7,9 @@ import torch
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 
-
 # create a crawler environment and wrap it in the gym wrapper
 env = Domain().environment()
 env = CrawlerWrapper(env)
-
 
 # define the hyper parameters
 params = Parameters(env.observation_space_size, env.action_space_size)
@@ -20,13 +18,6 @@ inputs = env.observation_space_size
 outputs = env.action_space_size
 
 hidden_dim = 512
-value_lr = params.value_lr
-soft_q_lr = params.soft_q_lr
-policy_lr = params.policy_lr
-replay_buffer_size = params.replay_buffer_size
-batch_size = params.batch_size
-soft_tau = params.soft_tau
-gamma = params.gamma
 max_frames = params.max_frames
 max_steps = params.max_steps
 
@@ -44,12 +35,11 @@ for i in range(20):
     reward_total = 0
     done = False
 
-    while not done:
+    while True:
         state = torch.FloatTensor(state).unsqueeze(0).to(device)
         dist, _ = policy_net(state)
         action = policy_net.get_action(state).detach()
-
-        state_next, reward, done, _ = env.step(action.numpy())
+        state_next, reward, done, _ = env.step(action.squeeze().numpy())
         state = state_next.squeeze()
 
         reward_total += reward[0]
