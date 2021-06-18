@@ -84,10 +84,8 @@ def sac_train():
                 action = policy_net.get_action(state).detach()
                 next_state, reward, done, _ = env.step(action.numpy())
             else:
-                action = policy_net.get_action(state).detach()
-                # action = np.random.uniform(low=np.nextafter(-1.0, 0.0), high=1.0, size=(10, 10))
-                next_state, reward, done, _ = env.step(action.numpy())
-                # next_state, reward, done, _ = env.step(action)
+                action = np.random.uniform(low=np.nextafter(-1.0, 0.0), high=1.0, size=(10, 20))
+                next_state, reward, done, _ = env.step(action)
 
             replay_buffer.push(state, action, reward, next_state, done)
 

@@ -44,6 +44,3 @@ for i in range(20):
 
         reward_total += reward[0]
         env.render()
-
-    reward_mean += reward_total
-    print("Mean Reward Episode ", i, reward_mean / 20)
