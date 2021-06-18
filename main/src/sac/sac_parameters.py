@@ -27,20 +27,20 @@ class Parameters:
 
         # update parameters
         # Size of the replay buffer
-        self.replay_buffer_size = 1000000
+        self.replay_buffer_size = 5000000
 
         # Size of the batch that is used for the update
-        self.batch_size = 128
+        self.batch_size = 256
 
         # the soft update coefficient (“polyak update”, between 0 and 1) for the target network
-        self.soft_tau = 1e-2
+        self.soft_tau = 5e-3
 
         # the discount factor applied to the rewards in each timestep
         self.gamma = 0.99
 
         # training parameters
-        # Maximum training steps
-        self.max_frames = 4000
+        # training episodes
+        self.max_episodes = 4000
 
         # Maximum steps per episode
-        self.max_steps = 500
+        self.max_steps = 5000000
