@@ -28,7 +28,7 @@ replay_buffer_size = params.replay_buffer_size
 batch_size = params.batch_size
 soft_tau = params.soft_tau
 gamma = params.gamma
-max_frames = params.max_frames
+max_episodes = params.max_episodes
 max_steps = params.max_steps
 
 # check for cuda support
@@ -73,15 +73,15 @@ def sac_train():
     """
     Initiates training loop.
     """
-    frame_idx = 0
+    episode = 0
     rewards = []
 
-    while frame_idx < max_frames:
+    while episode < max_episodes:
         state = env.reset()
         episode_reward = 0
 
         for step in range(max_steps):
-            if frame_idx > 1000:
+            if episode > 1000:
                 action = policy_net.get_action(state).detach()
                 next_state, reward, done, _ = env.step(action.numpy())
             else:
@@ -92,14 +92,14 @@ def sac_train():
 
             state = next_state
             episode_reward += reward
-            frame_idx += 1
+            episode += 1
 
             if len(replay_buffer) > batch_size:
                 sac_update(batch_size, gamma, soft_tau)
 
-            if frame_idx % 100 == 0:
-                print('Epoch:{}, episode reward is {}'.format(frame_idx, episode_reward))
-                policy_net.save(f'{frame_idx}')
+            if episode % 100 == 0:
+                print('Epoch:{}, episode reward is {}'.format(episode, episode_reward))
+                policy_net.save(f'{episode}')
                 # plot(frame_idx, rewards)
 
             if done[0]:
@@ -174,7 +174,7 @@ def sac_update(batch_size, gamma, soft_tau):
     # log_prob size 128, 10, 20
     target_value_func = predicted_new_q_value - log_prob
     # HACK: reshape predicted_value
-    reshape_v = torch.zeros(128, 10, 20).to(device)
+    reshape_v = torch.zeros(batch_size, 10, outputs).to(device)
     predicted_value = predicted_value - reshape_v
     # without HACK: returns a warning bc predicted_value 128, 10, 1 and target_value_func 128, 10, 20
     value_loss = value_criterion(predicted_value, target_value_func.detach())
