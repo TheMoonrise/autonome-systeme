@@ -1,7 +1,7 @@
 {
 	"training_iterations": 25000,
 	"params.clip": 0.2,
-	"epochs": 10,
+	"epochs_range": [3, 12],
 	"mini_batch_size": 40,
 	"influence_critic": 0.5,
 	"influence_entropy": 0.001,
