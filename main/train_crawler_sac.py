@@ -173,7 +173,7 @@ def sac_update(batch_size, gamma, soft_tau):
     # log_prob size 128, 10, 20
     target_value_func = predicted_new_q_value - log_prob
     # HACK: reshape predicted_value
-    reshape_v = torch.zeros(128, 10, 20)
+    reshape_v = torch.zeros(128, 10, 20).to(device)
     predicted_value = predicted_value - reshape_v
     # without HACK: returns a warning bc predicted_value 128, 10, 1 and target_value_func 128, 10, 20
     value_loss = value_criterion(predicted_value, target_value_func.detach())
