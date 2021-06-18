@@ -97,13 +97,14 @@ def sac_train():
             if len(replay_buffer) > batch_size:
                 sac_update(batch_size, gamma, soft_tau)
 
-            if episode % 100 == 0:
+            if episode % 1000 == 0:
                 print('Epoch:{}, episode reward is {}'.format(episode, episode_reward))
                 policy_net.save(f'{episode}')
+                mlflow.pytorch.log_model(policy_net, episode)
                 # plot(frame_idx, rewards)
 
             if done[0]:
-                break
+                mlflow.log_metric('episode reward', episode_reward[0])
 
         rewards.append(episode_reward)
 
@@ -185,6 +186,7 @@ def sac_update(batch_size, gamma, soft_tau):
 
 # Training Policy Function
     policy_loss = (log_prob - predicted_new_q_value).mean()
+    mlflow.log_metric('loss', policy_loss.item())
 
     policy_optimizer.zero_grad()
     policy_loss.backward()
@@ -214,16 +216,15 @@ with mlflow.start_run() as run:
     # print('Experiment id: ', exp_id)
 
     # log params, key and value are both strings
-    mlflow.log_param('training iterations', params.max_frames)
-    mlflow.log_param('clip', params.clip)
-    mlflow.log_param('epochs', params.epochs)
+    mlflow.log_param('training iterations', params.max_episodes)
     mlflow.log_param('batch size', params.batch_size)
-    mlflow.log_param('influence critic', params.influence_critic)
-    mlflow.log_param('influence entropy', params.influence_entropy)
+    mlflow.log_param('max steps', params.max_steps)
     mlflow.log_param('gamma', params.gamma)
-    mlflow.log_param('lambda', params.lmbda)
-    mlflow.log_param('trace', params.trace)
-    mlflow.log_param('learning rate', params.learning_rate)
+    mlflow.log_param('soft tau', params.soft_tau)
+    mlflow.log_param('replay_buffer_size', params.replay_buffer_size)
+    mlflow.log_param('value learning rate', params.value_lr)
+    mlflow.log_param('soft q learning rate', params.soft_q_lr)
+    mlflow.log_param('policy learning rate', params.policy_lr)
 
 # Start Training
 sac_train()
