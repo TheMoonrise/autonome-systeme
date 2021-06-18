@@ -2,6 +2,7 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 import numpy as np
+import mlflow
 
 from src.sac.sac_parameters import Parameters
 from src.sac.sac_actor_critic_crawler import ValueNetwork, SoftQNetwork, PolicyNetwork
@@ -195,6 +196,34 @@ def sac_update(batch_size, gamma, soft_tau):
             target_param.data * (1.0 - soft_tau) + param.data * soft_tau
         )
 
+
+# start mlflow run
+# if no run is active methods like mlflow.log_param will create a new run
+# a run is autometically closed when the with statement exits
+with mlflow.start_run() as run:
+    print('Running mlflow.')
+
+    # for returning informaton about the run
+    client = mlflow.tracking.MlflowClient()
+    print('Currently active run: ', client.get_run(mlflow.active_run().info.run_id).data)
+
+    print('Tracking server: ', mlflow.tracking.get_tracking_uri())
+
+    # creating an mlflow experiment
+    # exp_id = mlflow.create_experiment('PPO')
+    # print('Experiment id: ', exp_id)
+
+    # log params, key and value are both strings
+    mlflow.log_param('training iterations', params.max_frames)
+    mlflow.log_param('clip', params.clip)
+    mlflow.log_param('epochs', params.epochs)
+    mlflow.log_param('batch size', params.batch_size)
+    mlflow.log_param('influence critic', params.influence_critic)
+    mlflow.log_param('influence entropy', params.influence_entropy)
+    mlflow.log_param('gamma', params.gamma)
+    mlflow.log_param('lambda', params.lmbda)
+    mlflow.log_param('trace', params.trace)
+    mlflow.log_param('learning rate', params.learning_rate)
 
 # Start Training
 sac_train()

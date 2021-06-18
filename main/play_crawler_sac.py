@@ -25,7 +25,7 @@ name = "testrun"
 
 policy_net = PolicyNetwork(inputs, outputs, hidden_dim, name, device).to(device)
 
-policy_net.load_state_dict(torch.load('../autonome-systeme/models/sac/temp/crawler700', map_location=device))
+policy_net.load_state_dict(torch.load('../autonome-systeme/models/sac/temp/crawler4000', map_location=device))
 policy_net.eval()
 
 reward_mean = 0
