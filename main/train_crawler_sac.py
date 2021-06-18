@@ -95,7 +95,7 @@ def sac_train():
             replay_buffer.push(state, action, reward, next_state, done)
 
             state = next_state
-            episode_reward += reward
+            episode_reward += np.mean(reward)
             episode += 1
 
             if len(replay_buffer) > batch_size:
@@ -103,12 +103,13 @@ def sac_train():
 
             if episode % 1000 == 0:
                 print('Epoch:{}, episode reward is {}'.format(episode, episode_reward))
-                policy_net.save(f'{episode}')
-                mlflow.pytorch.log_model(policy_net, episode)
-                # plot(frame_idx, rewards)
+                policy_net.save(str(episode))
+                mlflow.pytorch.log_model(policy_net, str(episode))
 
             if done[0]:
-                mlflow.log_metric('episode reward', episode_reward[0])
+                performance = episode_reward
+                mlflow.log_metric('performance', performance)
+                break
 
         rewards.append(episode_reward)
 

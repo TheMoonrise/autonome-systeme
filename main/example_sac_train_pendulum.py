@@ -51,7 +51,7 @@ gamma = params.gamma
 # training parameters
 replay_buffer_size = params.replay_buffer_size
 batch_size = params.batch_size
-max_frames = params.max_frames
+max_frames = params.max_episodes
 max_steps = params.max_steps
 
 value_net = ValueNetwork(inputs, hidden_dim).to(device)
