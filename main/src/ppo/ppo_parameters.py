@@ -2,6 +2,7 @@
 
 import json
 import os
+import mlflow
 import numpy as np
 
 
@@ -59,6 +60,10 @@ class Parameters:
         self.learning_rate = 1e-5
 
     def load(self, file_name: str):
+        """
+        Loads the parameters from a json file.
+        :param file_name: The name of the file hoding the parameters.
+        """
         dirname = os.path.dirname(__file__)
         with open(os.path.join(dirname, Parameters.params_directory, file_name)) as file:
             params_dict = json.loads(file.read())
@@ -71,5 +76,23 @@ class Parameters:
             if key_range in params_dict:
                 self.__dict__[key] = np.random.uniform(*params_dict[key_range])
 
+        # floor parameters that must be integers
         self.trace = int(self.trace)
         self.training_iterations = int(self.training_iterations)
+        self.mini_batch_size = int(self.mini_batch_size)
+        self.epochs = int(self.epochs)
+
+    def log_to_mlflow(self):
+        """
+        Saves the parameters to the mlflow server.
+        """
+        mlflow.log_param('training iterations', self.training_iterations)
+        mlflow.log_param('clip', self.clip)
+        mlflow.log_param('epochs', self.epochs)
+        mlflow.log_param('mini batch size', self.mini_batch_size)
+        mlflow.log_param('influence critic', self.influence_critic)
+        mlflow.log_param('influence entropy', self.influence_entropy)
+        mlflow.log_param('gamma', self.gamma)
+        mlflow.log_param('lambda', self.lmbda)
+        mlflow.log_param('trace', self.trace)
+        mlflow.log_param('learning rate', self.learning_rate)
