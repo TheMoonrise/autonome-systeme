@@ -78,8 +78,9 @@ class Parameters:
 
         # floor parameters that must be integers
         self.trace = int(self.trace)
+        self.mini_batch_size = min(int(self.mini_batch_size), self.trace)
+
         self.training_iterations = int(self.training_iterations)
-        self.mini_batch_size = int(self.mini_batch_size)
         self.epochs = int(self.epochs)
 
     def log_to_mlflow(self):

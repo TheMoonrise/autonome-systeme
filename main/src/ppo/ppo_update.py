@@ -1,6 +1,5 @@
 """Provides functionality to update a model with given traces"""
 
-import mlflow
 import torch
 import numpy as np
 
@@ -83,5 +82,4 @@ class Update:
             loss.backward()
             optimizer.step()
 
-        avg_loss = sum(total_loss) / len(total_loss)
-        mlflow.log_metric('loss', avg_loss)
+        return sum(total_loss) / len(total_loss)

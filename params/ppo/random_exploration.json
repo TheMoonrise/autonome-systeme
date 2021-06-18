@@ -1,12 +1,12 @@
 {
-  "training_iterations": 100000,
-  "params.clip": 0.2,
-  "epochs": 10,
-  "mini_batch_size": 28,
-  "influence_critic": 0.5,
-  "influence_entropy": 0.001,
-  "gamma_range": [0.8, 1],
-  "lmbda_range": [0.9, 1],
-  "trace_range": [32, 100],
-  "learning_rate": 1e-5
+	"training_iterations": 25000,
+	"params.clip": 0.2,
+	"epochs": 10,
+	"mini_batch_size": 40,
+	"influence_critic": 0.5,
+	"influence_entropy": 0.001,
+	"gamma_range": [0.9, 0.999],
+	"lmbda_range": [0.9, 1],
+	"trace_range": [25, 45],
+	"learning_rate_range": [0.00001, 0.0001]
 }
