@@ -214,22 +214,8 @@ with mlflow.start_run(run_name='sac') as run:
     client = mlflow.tracking.MlflowClient()
     print('Currently active run: ', client.get_run(mlflow.active_run().info.run_id).data)
 
-    print('Tracking server: ', mlflow.tracking.get_tracking_uri())
-
-    # creating an mlflow experiment
-    # exp_id = mlflow.create_experiment('PPO')
-    # print('Experiment id: ', exp_id)
-
     # log params, key and value are both strings
-    mlflow.log_param('training iterations', params.max_episodes)
-    mlflow.log_param('batch size', params.batch_size)
-    mlflow.log_param('max steps', params.max_steps)
-    mlflow.log_param('gamma', params.gamma)
-    mlflow.log_param('soft tau', params.soft_tau)
-    mlflow.log_param('replay_buffer_size', params.replay_buffer_size)
-    mlflow.log_param('value learning rate', params.value_lr)
-    mlflow.log_param('soft q learning rate', params.soft_q_lr)
-    mlflow.log_param('policy learning rate', params.policy_lr)
+    params.log_to_mlflow()
 
-# Start Training
-sac_train()
+    # Start Training
+    sac_train()
