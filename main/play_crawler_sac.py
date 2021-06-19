@@ -18,14 +18,14 @@ inputs = env.observation_space_size
 outputs = env.action_space_size
 
 hidden_dim = 512
-max_frames = params.max_frames
+max_frames = params.max_episodes
 max_steps = params.max_steps
 
 name = "testrun"
 
 policy_net = PolicyNetwork(inputs, outputs, hidden_dim, name, device).to(device)
 
-policy_net.load_state_dict(torch.load('../autonome-systeme/models/sac/temp/crawler10000', map_location=device))
+policy_net.load_state_dict(torch.load('../autonome-systeme/models/sac/temp/crawler4000', map_location=device))
 policy_net.eval()
 
 reward_mean = 0

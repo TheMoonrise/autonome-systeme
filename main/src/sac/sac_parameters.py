@@ -27,7 +27,7 @@ class Parameters:
 
         # update parameters
         # Size of the replay buffer
-        self.replay_buffer_size = 5000000
+        self.replay_buffer_size = 500000
 
         # Size of the batch that is used for the update
         self.batch_size = 256
@@ -40,7 +40,7 @@ class Parameters:
 
         # training parameters
         # training episodes
-        self.max_episodes = 4000
+        self.max_episodes = 100000
 
         # Maximum steps per episode
         self.max_steps = 5000000
