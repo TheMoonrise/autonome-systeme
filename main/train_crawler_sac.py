@@ -23,7 +23,7 @@ env = Domain().environment()
 env = CrawlerWrapper(env)
 
 # load environment variables
-# load_dotenv()
+load_dotenv()
 
 # define the hyper parameters
 params = Parameters(env.observation_space_size, env.action_space_size, int(args.episodes), args.name)
