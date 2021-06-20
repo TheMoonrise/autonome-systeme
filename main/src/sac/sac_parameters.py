@@ -5,13 +5,16 @@ import mlflow
 
 class Parameters:
     """Holds parameters for sac training"""
-    def __init__(self, inputs: int, outputs: int):
+    def __init__(self, inputs: int, outputs: int, episodes: int, name: str):
         """
         Initializes the parameters with default values.
         These values should NOT be changed in this class but on individual instances of it.
         :param inputs: The size on the input layer of the actor critic network.
         :param outputs: The size of the output layer of actions.
         """
+        # name of the run which is used to create the folder where the trained model is saved
+        self.name = name
+
         # actor critic parameters
         # the size of the state inputs
         self.inputs = inputs
@@ -42,7 +45,7 @@ class Parameters:
 
         # training parameters
         # training episodes
-        self.max_episodes = 25000
+        self.max_episodes = episodes
 
         # Maximum steps per episode
         self.max_steps = 5000000

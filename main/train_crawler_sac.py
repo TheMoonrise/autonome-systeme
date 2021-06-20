@@ -4,6 +4,7 @@ import torch.nn as nn
 import numpy as np
 import mlflow
 from dotenv import load_dotenv
+from argparse import ArgumentParser
 
 from src.sac.sac_parameters import Parameters
 from src.sac.sac_actor_critic_crawler import ValueNetwork, SoftQNetwork, PolicyNetwork
@@ -11,15 +12,21 @@ from src.sac.sac_functions import ReplayBuffer
 from src.utils.domain import Domain
 from src.utils.wrapper import CrawlerWrapper
 
+# parse argument from cmd
+parser = ArgumentParser(description='sac training crawler')
+parser.add_argument('--name', type=str, help='the name under which the trained model is stored', default="test_run")
+parser.add_argument('--episodes', type=int, help='the number of episodes that the training should run', default=10000)
+args = parser.parse_args()
+
 # create a crawler environment and wrap it in the gym wrapper
 env = Domain().environment()
 env = CrawlerWrapper(env)
 
 # load environment variables
-load_dotenv()
+# load_dotenv()
 
 # define the hyper parameters
-params = Parameters(env.observation_space_size, env.action_space_size)
+params = Parameters(env.observation_space_size, env.action_space_size, args.episodes, args.name)
 
 inputs = env.observation_space_size
 outputs = env.action_space_size
@@ -48,7 +55,7 @@ target_value_net = ValueNetwork(inputs, hidden_dim).to(device)
 soft_q_net1 = SoftQNetwork(inputs, outputs, hidden_dim).to(device)
 soft_q_net2 = SoftQNetwork(inputs, outputs, hidden_dim).to(device)
 
-policy_net = PolicyNetwork(inputs, outputs, hidden_dim, model_name, device).to(device)
+policy_net = PolicyNetwork(inputs, outputs, hidden_dim, model_name, device, params).to(device)
 
 """
 value_net: PyTorch model (weights will be copied from)
@@ -101,7 +108,7 @@ def sac_train():
             if len(replay_buffer) > batch_size:
                 sac_update(batch_size, gamma, soft_tau)
 
-            if episode % 1000 == 0:
+            if episode % 100 == 0:
                 print('Epoch:{}, episode reward is {}'.format(episode, episode_reward))
                 policy_net.save(str(episode))
                 mlflow.pytorch.log_model(policy_net, str(episode))
