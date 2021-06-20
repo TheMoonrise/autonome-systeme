@@ -15,7 +15,7 @@ from src.utils.wrapper import CrawlerWrapper
 # parse argument from cmd
 parser = ArgumentParser(description='sac training crawler')
 parser.add_argument('--name', type=str, help='the name under which the trained model is stored', default="test_run")
-parser.add_argument('--episodes', type=int, help='the number of episodes that the training should run', default=10000)
+parser.add_argument('--episodes', type=str, help='the number of episodes that the training should run', default=10000)
 args = parser.parse_args()
 
 # create a crawler environment and wrap it in the gym wrapper
@@ -26,7 +26,7 @@ env = CrawlerWrapper(env)
 # load_dotenv()
 
 # define the hyper parameters
-params = Parameters(env.observation_space_size, env.action_space_size, args.episodes, args.name)
+params = Parameters(env.observation_space_size, env.action_space_size, int(args.episodes), args.name)
 
 inputs = env.observation_space_size
 outputs = env.action_space_size
