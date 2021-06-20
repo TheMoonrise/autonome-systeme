@@ -68,7 +68,8 @@ class SoftQNetwork(nn.Module):
 class PolicyNetwork(nn.Module):
     model_directory_save = "../../../models/sac/temp/"
 
-    def __init__(self, num_inputs, num_actions, hidden_size, name: str, device, params, init_w=3e-3, log_std_min=-20, log_std_max=2):
+    def __init__(self, num_inputs, num_actions, hidden_size, name: str, device, params,
+                 init_w=3e-3, log_std_min=-20, log_std_max=2):
         """
         Initializes the Policy Network.
         :param num_inputs: size of the observation space
@@ -84,7 +85,7 @@ class PolicyNetwork(nn.Module):
 
         self.name = name
 
-        self.model_folder = params.name + "/"
+        self.model_folder = params.file_name + "/"
         directory = os.path.dirname(__file__)
         path = os.path.join(directory, PolicyNetwork.model_directory_save, self.model_folder)
         try:

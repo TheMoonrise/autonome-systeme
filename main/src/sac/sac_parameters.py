@@ -5,7 +5,7 @@ import mlflow
 
 class Parameters:
     """Holds parameters for sac training"""
-    def __init__(self, inputs: int, outputs: int, episodes: int, name: str):
+    def __init__(self, inputs: int, outputs: int, episodes: int, file_name: str):
         """
         Initializes the parameters with default values.
         These values should NOT be changed in this class but on individual instances of it.
@@ -13,7 +13,7 @@ class Parameters:
         :param outputs: The size of the output layer of actions.
         """
         # name of the run which is used to create the folder where the trained model is saved
-        self.name = name
+        self.fille_name = file_name
 
         # actor critic parameters
         # the size of the state inputs
