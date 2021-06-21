@@ -70,7 +70,7 @@ class Parameters:
         mlflow.log_param('value learning rate', self.value_lr)
         mlflow.log_param('soft q learning rate', self.soft_q_lr)
         mlflow.log_param('policy learning rate', self.policy_lr)
-    
+
     def load(self, file_name: str):
         dirname = os.path.dirname(__file__)
         with open(os.path.join(dirname, Parameters.params_directory, file_name)) as file:

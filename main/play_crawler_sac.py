@@ -13,7 +13,7 @@ env = CrawlerWrapper(env)
 
 name = "testrun"
 episodes = 0
-file_name= "default"
+file_name = "default"
 
 # define the hyper parameters
 params = Parameters(env.observation_space_size, env.action_space_size, episodes, file_name)
