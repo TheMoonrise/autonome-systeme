@@ -14,8 +14,8 @@ from src.utils.wrapper import CrawlerWrapper
 
 # parse argument from cmd
 parser = ArgumentParser(description='sac training crawler')
-parser.add_argument('--name', type=str, help='the name under which the trained model is stored', default="test_run")
-parser.add_argument('--episodes', type=str, help='the number of episodes that the training should run', default=10000)
+parser.add_argument('--fname', type=str, help='the name under which the trained model is stored', default="test_run")
+parser.add_argument('--params', type=str, help='The parameter file for the model.')
 args = parser.parse_args()
 
 # create a crawler environment and wrap it in the gym wrapper
@@ -26,7 +26,8 @@ env = CrawlerWrapper(env)
 load_dotenv()
 
 # define the hyper parameters
-params = Parameters(env.observation_space_size, env.action_space_size, int(args.episodes), args.name)
+params = Parameters(env.observation_space_size, env.action_space_size, args.fname)
+if args.params is not None: params.load(args.params)
 
 inputs = env.observation_space_size
 outputs = env.action_space_size
@@ -108,7 +109,7 @@ def sac_train():
             if len(replay_buffer) > batch_size:
                 sac_update(batch_size, gamma, soft_tau)
 
-            if episode % 100 == 0:
+            if episode % 10000 == 0:
                 print('Epoch:{}, episode reward is {}'.format(episode, episode_reward))
                 policy_net.save(str(episode))
                 mlflow.pytorch.log_model(policy_net, str(episode))

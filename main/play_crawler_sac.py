@@ -11,8 +11,12 @@ device = torch.device("cuda" if use_cuda else "cpu")
 env = Domain().environment()
 env = CrawlerWrapper(env)
 
+name = "testrun"
+episodes = 0
+file_name= "default"
+
 # define the hyper parameters
-params = Parameters(env.observation_space_size, env.action_space_size)
+params = Parameters(env.observation_space_size, env.action_space_size, episodes, file_name)
 
 inputs = env.observation_space_size
 outputs = env.action_space_size
@@ -21,11 +25,9 @@ hidden_dim = 512
 max_frames = params.max_episodes
 max_steps = params.max_steps
 
-name = "testrun"
-
 policy_net = PolicyNetwork(inputs, outputs, hidden_dim, name, device).to(device)
 
-policy_net.load_state_dict(torch.load('../autonome-systeme/models/sac/temp/crawler25000', map_location=device))
+policy_net.load_state_dict(torch.load('../models/sac/temp/crawler150000', map_location=device))
 policy_net.eval()
 
 reward_mean = 0

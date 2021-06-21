@@ -1,11 +1,18 @@
 """Container for holding training hyperparameters"""
 
 import mlflow
+import os
+import json
+
+import numpy as np
 
 
 class Parameters:
     """Holds parameters for sac training"""
-    def __init__(self, inputs: int, outputs: int, episodes: int, file_name: str):
+
+    params_directory = "../../../params/sac"
+
+    def __init__(self, inputs: int, outputs: int, fname: str):
         """
         Initializes the parameters with default values.
         These values should NOT be changed in this class but on individual instances of it.
@@ -13,7 +20,7 @@ class Parameters:
         :param outputs: The size of the output layer of actions.
         """
         # name of the run which is used to create the folder where the trained model is saved
-        self.fille_name = file_name
+        self.file_name = fname
 
         # actor critic parameters
         # the size of the state inputs
@@ -45,7 +52,7 @@ class Parameters:
 
         # training parameters
         # training episodes
-        self.max_episodes = episodes
+        self.max_episodes = 150000
 
         # Maximum steps per episode
         self.max_steps = 5000000
@@ -63,3 +70,18 @@ class Parameters:
         mlflow.log_param('value learning rate', self.value_lr)
         mlflow.log_param('soft q learning rate', self.soft_q_lr)
         mlflow.log_param('policy learning rate', self.policy_lr)
+    
+    def load(self, file_name: str):
+        dirname = os.path.dirname(__file__)
+        with open(os.path.join(dirname, Parameters.params_directory, file_name)) as file:
+            params_dict = json.loads(file.read())
+
+        for key in self.__dict__:
+            if key in params_dict:
+                self.__dict__[key] = params_dict[key]
+            key_range = f"{key}_range"
+
+            if key_range in params_dict:
+                self.__dict__[key] = np.random.uniform(*params_dict[key_range])
+
+        self.max_episodes = int(self.max_episodes)

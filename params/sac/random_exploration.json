@@ -1,0 +1,12 @@
+{
+    "max_episodes": 150000,
+    "max_steps": 5000000,
+    "hidden_dim": 256,
+    "value_lr": 3e-4,
+    "soft_q_lr": 3e-4,
+    "policy_lr_range": [3e-4, 4e-4],
+    "replay_buffer_size": 500000,
+    "batch_size": 256,
+    "soft_tau_range": 5e-3,
+    "gamma_range": [0.8, 1]
+}
