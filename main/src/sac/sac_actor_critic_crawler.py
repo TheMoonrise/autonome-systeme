@@ -172,3 +172,4 @@ class PolicyNetwork(nn.Module):
         directory = os.path.dirname(__file__)
         path = os.path.join(directory, PolicyNetwork.model_directory_save, self.model_folder, self.name + appendix)
         torch.save(self.state_dict(), path)
+        return path

@@ -105,25 +105,62 @@ def sac_train():
 
             state = next_state
             episode_reward += np.mean(reward)
-            episode += 1
 
             if len(replay_buffer) > batch_size:
-                sac_update(batch_size, gamma, soft_tau)
+                sac_update(batch_size, gamma, soft_tau, episode)
 
-            if episode % 10000 == 0:
-                print('Epoch:{}, episode reward is {}'.format(episode, episode_reward))
-                policy_net.save(str(episode))
-                mlflow.pytorch.log_model(policy_net, str(episode))
+            # if episode % 10000 == 0:
+            #     print('Epoch:{}, episode reward is {}'.format(episode, episode_reward))
+            #     policy_net.save(str(episode))
+            #     mlflow.pytorch.log_model(policy_net, str(episode))
 
             if done[0]:
                 performance = episode_reward
-                mlflow.log_metric('performance', performance)
+                mlflow.log_metric('performance', performance, step=episode)
                 break
 
+        if episode % (max_episodes/10) == 0:
+            print('Epoch:{}, episode reward is {}'.format(episode, episode_reward))
+            path_to_current_model = policy_net.save(str(episode))
+            mlflow.pytorch.log_model(policy_net, str(episode))
+        
         rewards.append(episode_reward)
+        episode += 1
+    
+    # evaluate trained model
+    policy_net.load_state_dict(torch.load(path_to_current_model, map_location=device))
+    policy_net.eval()
+
+    all_rewards = []
+
+    number_iterations = 100
+
+    for i in range(number_iterations):
+        state = env.reset()
+        reward_total = 0
+
+        done = False
+        iteration_done = False
+
+        while not iteration_done:
+            state = torch.FloatTensor(state).unsqueeze(0).to(device)
+            dist, _ = policy_net(state)
+            action = policy_net.get_action(state).detach()
+            state_next, reward, done, _ = env.step(action.squeeze().numpy())
+            state = state_next.squeeze()
+            iteration_done = done.item(0)
+
+            reward_total += reward[0]
+            env.render()
+        # print(i, ":", reward_total)
+        mlflow.log_metric('reward test episode', reward_total, step=i)
+        all_rewards.append(reward_total)
+    reward_mean = sum(all_rewards) / len(all_rewards)
+    mlflow.log_param('mean test reward', reward_mean) 
+    print("Mean Reward after", number_iterations, "iterations:", reward_mean)
 
 
-def sac_update(batch_size, gamma, soft_tau):
+def sac_update(batch_size, gamma, soft_tau, episode):
     """
     method that updates the two q functions, the value function and the policy function
     :param batch_size: batch size that is used for the update
@@ -200,7 +237,11 @@ def sac_update(batch_size, gamma, soft_tau):
 
 # Training Policy Function
     policy_loss = (log_prob - predicted_new_q_value).mean()
-    mlflow.log_metric('loss', policy_loss.item())
+    mlflow.log_metric('loss', policy_loss.item(), step=episode)
+
+    # print("log_prob: ", log_prob[0][0][0])
+    # print("predicted_new_q_value: ", predicted_new_q_value[0][0])
+    # print("policy_loss: ", policy_loss)
 
     policy_optimizer.zero_grad()
     policy_loss.backward()
