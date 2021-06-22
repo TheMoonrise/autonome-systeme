@@ -119,14 +119,14 @@ def sac_train():
                 mlflow.log_metric('performance', performance, step=episode)
                 break
 
-        if episode % (max_episodes/10) == 0:
+        if episode % (max_episodes / 10) == 0:
             print('Epoch:{}, episode reward is {}'.format(episode, episode_reward))
             path_to_current_model = policy_net.save(str(episode))
             mlflow.pytorch.log_model(policy_net, str(episode))
-        
+
         rewards.append(episode_reward)
         episode += 1
-    
+
     # evaluate trained model
     policy_net.load_state_dict(torch.load(path_to_current_model, map_location=device))
     policy_net.eval()
@@ -156,7 +156,7 @@ def sac_train():
         mlflow.log_metric('reward test episode', reward_total, step=i)
         all_rewards.append(reward_total)
     reward_mean = sum(all_rewards) / len(all_rewards)
-    mlflow.log_param('mean test reward', reward_mean) 
+    mlflow.log_param('mean test reward', reward_mean)
     print("Mean Reward after", number_iterations, "iterations:", reward_mean)
 
 
