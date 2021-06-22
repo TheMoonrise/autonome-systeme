@@ -46,7 +46,7 @@ for i in range(number_iterations):
         action = policy_net.get_action(state).detach()
         state_next, reward, done, _ = env.step(action.squeeze().numpy())
         state = state_next.squeeze()
-        iteration_done=done.item(0)
+        iteration_done = done.item(0)
 
         reward_total += reward[0]
         env.render()
