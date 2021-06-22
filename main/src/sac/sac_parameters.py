@@ -54,6 +54,8 @@ class Parameters:
         # training episodes
         self.max_episodes = 150000
 
+        self.initial_exploration = 1000
+
         # Maximum steps per episode
         self.max_steps = 5000000
 
@@ -64,6 +66,7 @@ class Parameters:
         mlflow.log_param('training iterations', self.max_episodes)
         mlflow.log_param('batch size', self.batch_size)
         mlflow.log_param('max steps', self.max_steps)
+        mlflow.log_param('initial_exploration', self.initial_exploration)
         mlflow.log_param('gamma', self.gamma)
         mlflow.log_param('soft tau', self.soft_tau)
         mlflow.log_param('replay_buffer_size', self.replay_buffer_size)
@@ -85,3 +88,4 @@ class Parameters:
                 self.__dict__[key] = np.random.uniform(*params_dict[key_range])
 
         self.max_episodes = int(self.max_episodes)
+        self.initial_exploration = int(self.initial_exploration)

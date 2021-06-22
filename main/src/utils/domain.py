@@ -17,7 +17,7 @@ class Domain:
         Provides the build path of the domain executable.
         :returns: The absolute path to the build executable and whether the environment window should be hidden.
         """
-        folder, extension, hidden = None, None, False
+        folder, extension, hidden = None, None, True
 
         if (platform.system() == 'Windows'): folder, extension = 'windows', '.exe'
         if (platform.system() == 'Darwin'): folder, extension = 'mac', '.app'

@@ -41,6 +41,7 @@ batch_size = params.batch_size
 soft_tau = params.soft_tau
 gamma = params.gamma
 max_episodes = params.max_episodes
+initial_exploration = params.initial_exploration
 max_steps = params.max_steps
 
 # check for cuda support
@@ -93,7 +94,7 @@ def sac_train():
         episode_reward = 0
 
         for step in range(max_steps):
-            if episode > 1000:
+            if episode > initial_exploration:
                 action = policy_net.get_action(state).detach()
                 next_state, reward, done, _ = env.step(action.numpy())
             else:
