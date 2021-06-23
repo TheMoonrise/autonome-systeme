@@ -55,7 +55,7 @@ for run in range(args.runs):
         try:
             # run the training loop
             train = TrainAndEvaluate(env, model)
-            train.train(params, optimizer, device, 2500)
+            train.train(params, optimizer, device, 1000)
 
         except Exception as e:
             print('Training ended prematurely')

@@ -1,0 +1,12 @@
+{
+	"training_iterations": 10000,
+	"clip": 0.2,
+	"epochs": 10,
+	"mini_batch_size": 32,
+	"influence_critic": 0.5,
+	"influence_entropy": 0.002,
+	"gamma": 0.99,
+	"lmbda": 1,
+	"trace": 32,
+	"learning_rate": 1e-5
+}
