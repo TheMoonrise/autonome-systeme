@@ -42,6 +42,7 @@ class TrainAndEvaluate():
         # model performance tracking
         self.performance = []
         self.performance_counter = 0
+        self.episode_steps = 0
 
     def train(self, params: Parameters, optimizer: Optimizer, device: str, save_interval: int = -1):
         """
@@ -80,13 +81,12 @@ class TrainAndEvaluate():
             advantages = returns - values
 
             update = Update(params, states, actions, probs, returns, advantages)
-            update.update(optimizer, self.model)
+            update.update(optimizer, self.model, i)
 
             if save_interval > 0 and (i % save_interval == 0 or i == params.training_iterations):
-                appendix = f'[{i:0>4}({performance:.0f})]'
+                appendix = f'-{i:0>4}-{performance:.0f}'
                 self.model.save(appendix)
-                # log model in mlflow
-                mlflow.pytorch.log_model(self.model, appendix)
+                mlflow.log_artifact(self.model.model_path(appendix, is_save=True))
 
     def evaluate(self, render: bool):
         """
@@ -146,12 +146,15 @@ class TrainAndEvaluate():
 
             # update performance tracking for the first agent
             self.performance_counter += rewards[0]
+            self.episode_steps += 1
 
             if self.done[0]:
+                mlflow.log_metric('performance', self.performance_counter, step=len(self.performance))
+                mlflow.log_metric('episode length', self.episode_steps, step=len(self.performance))
+
                 self.performance.append(self.performance_counter)
-                # log performance as metric
-                mlflow.log_metric('performance', self.performance_counter)
                 self.performance_counter = 0
+                self.episode_steps = 0
 
     def _clear_trace(self):
         """
