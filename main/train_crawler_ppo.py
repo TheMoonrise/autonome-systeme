@@ -48,7 +48,9 @@ for run in range(args.runs):
     # start mlflow run
     # if no run is active methods like mlflow.log_param will create a new run
     # a run is autometically closed when the with statement exits
-    with mlflow.start_run(run_name='ppo') as run:
+    name_appendix = f'-{args.params.replace(".json", "").replace("_", "-")}' if args.params is not None else ''
+
+    with mlflow.start_run(run_name='ppo' + name_appendix) as run:
         print('Starting mlflow run')
         params.log_to_mlflow()
 
