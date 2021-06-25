@@ -54,22 +54,22 @@ class Parameters:
         # training episodes
         self.max_episodes = 150000
 
-        self.initial_exploration = 1000
+        self.initial_exploration = 100
 
         # Maximum steps per episode
-        self.max_steps = 5000000
+        self.max_steps = 500000
 
     def log_to_mlflow(self):
         """
         Saves the parameters to the mlflow server
         """
-        mlflow.log_param('training iterations', self.max_episodes)
+        mlflow.log_param('max episodes', self.max_episodes)
         mlflow.log_param('batch size', self.batch_size)
         mlflow.log_param('max steps', self.max_steps)
-        mlflow.log_param('initial_exploration', self.initial_exploration)
+        mlflow.log_param('initial exploration', self.initial_exploration)
         mlflow.log_param('gamma', self.gamma)
         mlflow.log_param('soft tau', self.soft_tau)
-        mlflow.log_param('replay_buffer_size', self.replay_buffer_size)
+        mlflow.log_param('replay buffer size', self.replay_buffer_size)
         mlflow.log_param('value learning rate', self.value_lr)
         mlflow.log_param('soft q learning rate', self.soft_q_lr)
         mlflow.log_param('policy learning rate', self.policy_lr)

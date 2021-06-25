@@ -117,6 +117,7 @@ def sac_train():
             if done[0]:
                 performance = episode_reward
                 mlflow.log_metric('performance', performance, step=episode)
+                mlflow.log_metric('episode length', step, step=episode)
                 break
 
         if episode % (max_episodes / 1000) == 0:
@@ -216,6 +217,9 @@ def sac_update(batch_size, gamma, soft_tau, episode):
     q_value_loss2.backward()
     soft_q_optimizer2.step()
 
+    mlflow.log_metric('q1 loss', q_value_loss1.item(), step=episode)
+    mlflow.log_metric('q2 loss', q_value_loss2.item(), step=episode)
+
 # Training Value Function
     # predicted_new_q_value size 128, 10, 1
     # new_action size 128, 10, 20
@@ -235,10 +239,11 @@ def sac_update(batch_size, gamma, soft_tau, episode):
     value_loss.backward()
     value_optimizer.step()
 
+    mlflow.log_metric('value loss', value_loss.item(), step=episode)
+
 # Training Policy Function
     policy_loss = (log_prob - predicted_new_q_value).mean()
-    mlflow.log_metric('loss', policy_loss.item(), step=episode)
-
+    
     # print("log_prob: ", log_prob[0][0])
     # print("predicted_new_q_value: ", predicted_new_q_value[0][0])
     # print("policy_loss: ", policy_loss)
@@ -248,6 +253,8 @@ def sac_update(batch_size, gamma, soft_tau, episode):
     policy_optimizer.zero_grad()
     policy_loss.backward()
     policy_optimizer.step()
+
+    mlflow.log_metric('loss', policy_loss.item(), step=episode)
 
     # Soft update model parameters. θ_target = τ*θ_local + (1 - τ)*θ_target
     for target_param, param in zip(target_value_net.parameters(), value_net.parameters()):
