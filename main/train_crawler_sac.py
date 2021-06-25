@@ -266,7 +266,7 @@ def sac_update(batch_size, gamma, soft_tau, episode):
 # start mlflow run
 # if no run is active methods like mlflow.log_param will create a new run
 # a run is autometically closed when the with statement exits
-with mlflow.start_run(run_name='sac') as run:
+with mlflow.start_run(run_name=params.file_name) as run:
     print('Running mlflow.')
 
     # for returning informaton about the run
