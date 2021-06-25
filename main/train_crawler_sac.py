@@ -120,7 +120,7 @@ def sac_train():
                 mlflow.log_metric('episode length', step, step=episode)
                 break
 
-        if episode % (max_episodes / 1000) == 0:
+        if episode % 1000 == 0:
             print('Epoch:{}, episode reward is {}'.format(episode, episode_reward))
             path_to_current_model = policy_net.save(str(episode))
             mlflow.pytorch.log_model(policy_net, str(episode))
