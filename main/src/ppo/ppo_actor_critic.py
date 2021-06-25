@@ -24,13 +24,22 @@ class ActorCritic(nn.Module):
         self.name = name
         self.params = params
 
+    def model_path(self, appendix: str = '', is_save: bool = True):
+        """
+        Provides the path at which the model will be saved.
+        :param appendix: An appendix to add to the file name of the model.
+        :param is_save: Whether the save or load path should be provided.
+        """
+        directory = os.path.dirname(__file__)
+        path = ActorCritic.model_directory_save if is_save else ActorCritic.model_directory_load
+        return os.path.join(directory, path, self.name + appendix)
+
     def save(self, appendix: str = ''):
         """
         Saves the current model parameters to file.
         :param appendix: An appendix to add to the file name of the model.
         """
-        directory = os.path.dirname(__file__)
-        path = os.path.join(directory, ActorCritic.model_directory_save, self.name + appendix)
+        path = self.model_path(appendix, is_save=True)
         torch.save(self.state_dict(), path)
 
     def load(self, device: str = 'cpu'):
@@ -38,7 +47,6 @@ class ActorCritic(nn.Module):
         Loads model parameters from the name of the model.
         :param device: The device on which to run the model
         """
-        directory = os.path.dirname(__file__)
-        path = os.path.join(directory, ActorCritic.model_directory_load, self.name)
+        path = self.model_path(is_save=False)
         self.load_state_dict(torch.load(path, map_location=device))
         self.eval()

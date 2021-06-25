@@ -1,18 +1,21 @@
+import mlflow
+import tempfile
 import torch
 import torch.optim as optim
-from argparse import ArgumentParser
-import mlflow
+
 from dotenv import load_dotenv
+from argparse import ArgumentParser
 
 from src.ppo.ppo_parameters import Parameters
 from src.ppo.ppo_actor_critic_crawler import ActorCriticCrawler
 from src.ppo.ppo_training import TrainAndEvaluate
 from src.utils.domain import Domain
 from src.utils.wrapper import CrawlerWrapper
+from src.plots.plots import Plots
 
 parser = ArgumentParser(description='The argument mining prediction.')
 parser.add_argument('--runs', type=int, help='how many times the training will be performed.', default=1)
-parser.add_argument('--model-name', type=str, help='The name of the model to load.')
+parser.add_argument('--model', type=str, help='The name of the model to load.')
 parser.add_argument('--params', type=str, help='The parameter file for the model.')
 args = parser.parse_args()
 
@@ -34,8 +37,8 @@ for run in range(args.runs):
 
     # create a model to train and optimizer
     # if given as an commandline argument a pretrained model is used a starting point
-    use_pretrained_model = args.model_name is not None
-    model_name = args.model_name if use_pretrained_model else 'crawler'
+    use_pretrained_model = args.model is not None
+    model_name = args.model if use_pretrained_model else 'crawler'
 
     model = ActorCriticCrawler(params, model_name).to(device)
     if use_pretrained_model: model.load(device)
@@ -45,31 +48,24 @@ for run in range(args.runs):
     # start mlflow run
     # if no run is active methods like mlflow.log_param will create a new run
     # a run is autometically closed when the with statement exits
-    with mlflow.start_run() as run:
-        print('Running mlflow.')
+    name_appendix = f'-{args.params.replace(".json", "").replace("_", "-")}' if args.params is not None else ''
 
-        # for returning informaton about the run
-        client = mlflow.tracking.MlflowClient()
-        print('Currently active run: ', client.get_run(mlflow.active_run().info.run_id).data)
+    with mlflow.start_run(run_name='ppo' + name_appendix) as run:
+        print('Starting mlflow run')
+        params.log_to_mlflow()
 
-        print('Tracking server: ', mlflow.tracking.get_tracking_uri())
+        try:
+            # run the training loop
+            train = TrainAndEvaluate(env, model)
+            train.train(params, optimizer, device, 1000)
 
-        # creating an mlflow experiment
-        # exp_id = mlflow.create_experiment('PPO')
-        # print('Experiment id: ', exp_id)
+        except Exception as e:
+            print('Training ended prematurely')
+            print(e)
 
-        # log params, key and value are both strings
-        mlflow.log_param('training iterations', params.training_iterations)
-        mlflow.log_param('clip', params.clip)
-        mlflow.log_param('epochs', params.epochs)
-        mlflow.log_param('mini batch size', params.mini_batch_size)
-        mlflow.log_param('influence critic', params.influence_critic)
-        mlflow.log_param('influence entropy', params.influence_entropy)
-        mlflow.log_param('gamma', params.gamma)
-        mlflow.log_param('lambda', params.lmbda)
-        mlflow.log_param('trace', params.trace)
-        mlflow.log_param('learning rate', params.learning_rate)
+        # generate some graphics and save them to mlflow
+        with tempfile.TemporaryDirectory() as dir:
+            plots = Plots(dir, 'ppo')
+            plots.plot_performance(train.performance)
 
-        # run the training loop
-        train = TrainAndEvaluate(env, model)
-        train.train(params, optimizer, device, 500)
+            mlflow.log_artifacts(dir)

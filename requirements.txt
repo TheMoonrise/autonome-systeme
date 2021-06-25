@@ -6,3 +6,6 @@ gym==0.18.3
 matplotlib
 flake8==3.8
 mlagents-envs==0.26.0
+mlflow
+python-dotenv
+boto3

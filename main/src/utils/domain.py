@@ -1,6 +1,7 @@
 """Helper functions for working with the ml domain"""
 
 import os
+import random
 import platform
 
 from mlagents_envs.environment import UnityEnvironment
@@ -35,4 +36,4 @@ class Domain:
         :returns: A unity ml environment for the current platform
         """
         path, hidden = self._build_path()
-        return UnityEnvironment(file_name=path, no_graphics=hidden)
+        return UnityEnvironment(file_name=path, no_graphics=hidden, worker_id=random.randint(0, 65535))
