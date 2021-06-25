@@ -119,7 +119,7 @@ def sac_train():
                 mlflow.log_metric('performance', performance, step=episode)
                 break
 
-        if episode % (max_episodes / 10) == 0:
+        if episode % (max_episodes / 1000) == 0:
             print('Epoch:{}, episode reward is {}'.format(episode, episode_reward))
             path_to_current_model = policy_net.save(str(episode))
             mlflow.pytorch.log_model(policy_net, str(episode))
@@ -239,9 +239,11 @@ def sac_update(batch_size, gamma, soft_tau, episode):
     policy_loss = (log_prob - predicted_new_q_value).mean()
     mlflow.log_metric('loss', policy_loss.item(), step=episode)
 
-    # print("log_prob: ", log_prob[0][0][0])
+    # print("log_prob: ", log_prob[0][0])
     # print("predicted_new_q_value: ", predicted_new_q_value[0][0])
     # print("policy_loss: ", policy_loss)
+    # difference = log_prob - predicted_new_q_value
+    # print("difference: ", difference[0][0])
 
     policy_optimizer.zero_grad()
     policy_loss.backward()
