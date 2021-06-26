@@ -20,8 +20,8 @@ class ActorCriticCrawler(ActorCritic):
         """
         super().__init__(params, name)
 
-        self.hidden01 = 256
-        self.hidden02 = 512
+        self.hidden01 = params.hidden01
+        self.hidden02 = params.hidden02
 
         self.net = nn.Sequential(
             nn.BatchNorm1d(params.inputs),
