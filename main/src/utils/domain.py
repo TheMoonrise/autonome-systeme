@@ -46,7 +46,7 @@ class Domain:
 
         id = random.randint(0, 65535)
         channel = EngineConfigurationChannel()
-        
+
         env = UnityEnvironment(file_name=path, no_graphics=hidden, worker_id=id, side_channels=[channel])
         channel.set_configuration_parameters(time_scale=time_scale, quality_level=quality_level)
         return env
