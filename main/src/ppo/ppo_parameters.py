@@ -59,6 +59,12 @@ class Parameters:
         # the learning rate of the optimizer
         self.learning_rate = 1e-5
 
+        # the size of the first hidden layer
+        self.hidden01 = 256
+
+        # the size of the second hidden layer
+        self.hidden02 = 512
+
     def load(self, file_name: str):
         """
         Loads the parameters from a json file.
@@ -97,3 +103,5 @@ class Parameters:
         mlflow.log_param('lambda', self.lmbda)
         mlflow.log_param('trace', self.trace)
         mlflow.log_param('learning rate', self.learning_rate)
+        mlflow.log_param('hidden01', self.hidden01)
+        mlflow.log_param('hidden02', self.hidden02)
