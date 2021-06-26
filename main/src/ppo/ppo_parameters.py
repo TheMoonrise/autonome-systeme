@@ -95,7 +95,7 @@ class Parameters:
         self.epochs = int(self.epochs)
 
         # adjust decay to training length
-        self.entropy_decay = 10 / self.training_iterations if self.entropy_decay != 0 else 0
+        self.entropy_decay = 1 / self.training_iterations if self.entropy_decay != 0 else 0
 
     def log_to_mlflow(self):
         """
