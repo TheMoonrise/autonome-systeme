@@ -3,6 +3,7 @@
 import torch
 import mlflow
 import numpy as np
+import math
 
 from .ppo_actor_critic import ActorCritic
 from .ppo_parameters import Parameters
@@ -94,6 +95,12 @@ class Update:
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+
+        # reduce entropy after epochs are finished
+        self.params.influence_entropy = self.params.influence_entropy * math.exp(-1. * iteration * self.params.entropy_decay)
+
+        # log entropy as metric to ml flow
+        mlflow.log_metric('decaying influence entropy', self.params.influence_entropy, iteration)
 
         # log metrics to ml flow
         mlflow.log_metric('loss', total_loss / self.params.epochs, iteration)

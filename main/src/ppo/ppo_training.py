@@ -61,6 +61,7 @@ class TrainAndEvaluate():
 
         for i in range(1, params.training_iterations + 1):
             performance = np.average(self.performance[-10:]) if self.performance else 0
+            # TODO: len(self.performance) does not equal epochs
             print(f"\rIteration, Epoch, Performance [ {i:^5} | {len(self.performance):^5} | {performance:^5.0f} ]", end='')
 
             self._clear_trace()

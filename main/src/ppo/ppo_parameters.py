@@ -42,6 +42,11 @@ class Parameters:
         # the factor at which the entropy influences the overall loss
         self.influence_entropy = 0.001
 
+        # the factor by which the influence_entropy decays over time
+        # set to 0 or 1 which corresponds to no decay or decay
+        # actual decay value is calculated with the training_iterations value in load method
+        self.entropy_decay = 0
+
         # return value parameters
         # the discount factor applied to the rewards in each timestep
         self.gamma = 0.9
@@ -89,6 +94,9 @@ class Parameters:
         self.training_iterations = int(self.training_iterations)
         self.epochs = int(self.epochs)
 
+        # adjust decay to training length
+        self.entropy_decay = 10 / self.training_iterations if self.entropy_decay != 0 else 0
+
     def log_to_mlflow(self):
         """
         Saves the parameters to the mlflow server.
@@ -99,6 +107,7 @@ class Parameters:
         mlflow.log_param('mini batch size', self.mini_batch_size)
         mlflow.log_param('influence critic', self.influence_critic)
         mlflow.log_param('influence entropy', self.influence_entropy)
+        mlflow.log_param('entropy decay', self.entropy_decay)
         mlflow.log_param('gamma', self.gamma)
         mlflow.log_param('lambda', self.lmbda)
         mlflow.log_param('trace', self.trace)
