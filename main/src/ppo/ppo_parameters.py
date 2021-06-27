@@ -43,9 +43,8 @@ class Parameters:
         self.influence_entropy = 0.001
 
         # the factor by which the influence_entropy decays over time
-        # set to 0 or 1 which corresponds to no decay or decay
-        # actual decay value is calculated with the training_iterations value in load method
-        self.entropy_decay = 0
+        # with 1e-5 should slowly converge towards zero until 300000th training iteration
+        self.entropy_decay = 1e-5
 
         # return value parameters
         # the discount factor applied to the rewards in each timestep
@@ -95,7 +94,7 @@ class Parameters:
         self.epochs = int(self.epochs)
 
         # adjust decay to training length
-        self.entropy_decay = 1 / self.training_iterations if self.entropy_decay != 0 else 0
+        # self.entropy_decay = 1 / self.training_iterations if self.entropy_decay != 0 else 0
 
     def log_to_mlflow(self):
         """

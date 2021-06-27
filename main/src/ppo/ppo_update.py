@@ -96,7 +96,7 @@ class Update:
             loss.backward()
             optimizer.step()
 
-        # reduce entropy after epochs are finished
+        # reduce entropy after epochs are finished/update is finished
         self.params.influence_entropy = self.params.influence_entropy * math.exp(-1. * iteration * self.params.entropy_decay)
 
         # log entropy as metric to ml flow
