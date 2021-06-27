@@ -2,6 +2,7 @@
 
 import os
 import matplotlib.pyplot as plt
+import numpy as np
 
 from typing import List
 
@@ -37,3 +38,31 @@ class Plots:
         plt.figure()
         plt.plot(values)
         plt.savefig(self.figure_path('performance'))
+
+    def plot_moving_avg_performance(self, values: List[float], window_size: int = 100):
+        """
+        Plots the moving average of the performance of the training run.
+        :param values: The performance of each episode during training.
+        :param window_size: The number of samples to consider for calculating the moving average.
+        """
+        # change plot style
+        # plt.style.use('ggplot')
+
+        # calculate moving average
+        window = np.ones(int(window_size)) / float(window_size)
+        moving_avg = np.convolve(values, window, 'valid')
+
+        plt.figure()
+
+        # plot data
+        plt.plot(values, color='royalblue', alpha=0.3, label='Performance')
+        plt.plot(moving_avg, color='royalblue', label='Moving average of performance')
+
+        # set plot information
+        # plt.title('Moving Average of Performance')
+        plt.xlabel('Episode')
+        plt.ylabel('Performance')
+        plt.legend()
+
+        # save plot
+        plt.savefig(self.figure_path('avg-performance'))

@@ -72,5 +72,6 @@ for run in range(args.runs):
         with tempfile.TemporaryDirectory() as dir:
             plots = Plots(dir, 'ppo')
             plots.plot_performance(train.performance)
+            plots.plot_moving_avg_performance(train.performance)
 
             mlflow.log_artifacts(dir)
