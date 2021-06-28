@@ -1,5 +1,5 @@
 {
-	"training_iterations": 40000,
+	"training_iterations": 75000,
 	"clip": 0.2,
 	"epochs": 3,
 	"mini_batch_size": 32,
@@ -8,5 +8,7 @@
 	"gamma": 0.995,
 	"lmbda": 1,
 	"trace": 32,
-	"learning_rate": 1e-5
+	"learning_rate": 3e-5,
+	"hidden01": 128,
+	"hidden02": 128
 }
