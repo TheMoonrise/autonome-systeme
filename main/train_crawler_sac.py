@@ -243,7 +243,7 @@ def sac_update(batch_size, gamma, soft_tau, episode):
 
 # Training Policy Function
     policy_loss = (log_prob - predicted_new_q_value).mean()
-    
+
     # print("log_prob: ", log_prob[0][0])
     # print("predicted_new_q_value: ", predicted_new_q_value[0][0])
     # print("policy_loss: ", policy_loss)

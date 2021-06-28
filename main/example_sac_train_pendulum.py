@@ -26,6 +26,7 @@ def plot_rewards(frame_idx, rewards):
     plt.plot(rewards)
     plt.show()
 
+
 def plot_loss(frame_idx, loss):
     clear_output(True)
     plt.figure(figsize=(20, 5))
