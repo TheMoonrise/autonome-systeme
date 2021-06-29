@@ -86,7 +86,7 @@ class TrainAndEvaluate():
             if save_interval > 0 and (i % save_interval == 0 or i == params.training_iterations):
                 appendix = f'-{i:0>4}-{performance:.0f}'
                 self.model.save(appendix)
-                mlflow.log_artifact(self.model.model_path(appendix, is_save=True))
+                if params.mlflow: mlflow.log_artifact(self.model.model_path(appendix, is_save=True))
 
     def evaluate(self, render: bool):
         """
@@ -149,8 +149,9 @@ class TrainAndEvaluate():
             self.episode_steps += 1
 
             if self.done[0]:
-                mlflow.log_metric('performance', self.performance_counter, step=len(self.performance))
-                mlflow.log_metric('episode length', self.episode_steps, step=len(self.performance))
+                if params.mlflow:
+                    mlflow.log_metric('performance', self.performance_counter, step=len(self.performance))
+                    mlflow.log_metric('episode length', self.episode_steps, step=len(self.performance))
 
                 self.performance.append(self.performance_counter)
                 self.performance_counter = 0

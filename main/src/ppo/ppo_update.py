@@ -96,11 +96,10 @@ class Update:
             optimizer.step()
 
         # log metrics to ml flow
-        mlflow.log_metric('loss', total_loss / self.params.epochs, iteration)
-
         # log most metrics not every iteration for better performance
-        if iteration % 10 != 0: return
+        if iteration % 10 != 0 or not self.params.mlflow: return
 
+        mlflow.log_metric('loss', total_loss / self.params.epochs, iteration)
         mlflow.log_metric('objective actor', total_objc_actor / self.params.epochs, iteration)
         mlflow.log_metric('loss critic', total_loss_critic / self.params.epochs, iteration)
 

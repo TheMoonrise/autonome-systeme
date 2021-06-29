@@ -65,6 +65,9 @@ class Parameters:
         # the size of the second hidden layer
         self.hidden02 = 512
 
+        # whether mlflow should be enabled for the run
+        self.mlflow = True
+
     def load(self, file_name: str):
         """
         Loads the parameters from a json file.
