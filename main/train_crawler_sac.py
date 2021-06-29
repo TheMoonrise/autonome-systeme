@@ -27,7 +27,7 @@ env = CrawlerWrapper(env)
 load_dotenv()
 
 # define the hyper parameters
-params = Parameters(env.observation_space_size, env.action_space_size, args.fname)
+params = Parameters(env.observation_space_size, env.action_space_size, args.fname, args.speed)
 if args.params is not None: params.load(args.params)
 
 inputs = env.observation_space_size
@@ -124,7 +124,8 @@ def sac_train():
         if episode % 1000 == 0:
             print('Epoch:{}, episode reward is {}'.format(episode, episode_reward))
             path_to_current_model = policy_net.save(str(episode))
-            mlflow.pytorch.log_model(policy_net, str(episode))
+            if episode % 10000 == 0:
+                mlflow.pytorch.log_model(policy_net, str(episode))
 
         rewards.append(episode_reward)
         episode += 1
