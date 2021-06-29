@@ -6,6 +6,7 @@ import platform
 
 from mlagents_envs.environment import UnityEnvironment
 from mlagents_envs.side_channel.engine_configuration_channel import EngineConfigurationChannel
+from mlagents_envs.side_channel.environment_parameters_channel import EnvironmentParametersChannel
 
 
 class Domain:
@@ -19,7 +20,7 @@ class Domain:
         Provides the build path of the domain executable.
         :returns: The absolute path to the build executable and whether the environment window should be hidden.
         """
-        folder, extension, hidden = None, None, True
+        folder, extension, hidden = None, None, False
 
         if (platform.system() == 'Windows'): folder, extension = 'windows', '.exe'
         if (platform.system() == 'Darwin'): folder, extension = 'mac', '.app'
@@ -31,7 +32,8 @@ class Domain:
         path = os.path.join(dirname, '../../../environment', folder, f'Crawler{extension}')
         return path, hidden
 
-    def environment(self, time_scale: float = 2, quality_level: float = 1, hide_window: bool = False):
+    def environment(self, time_scale: float = 2, quality_level: float = 1, hide_window: bool = False,
+                    slipperiness: float = 0, steepness: float = 0):
         """
         Generates a new unity ml environment.
         :param time_scale: The multiplier used for the physics simulation in unity.
@@ -45,8 +47,15 @@ class Domain:
         if hide_window: hidden = True
 
         id = random.randint(0, 65535)
-        channel = EngineConfigurationChannel()
 
-        env = UnityEnvironment(file_name=path, no_graphics=hidden, worker_id=id, side_channels=[channel])
-        channel.set_configuration_parameters(time_scale=time_scale, quality_level=quality_level)
+        channel_eng = EngineConfigurationChannel()
+        channel_env = EnvironmentParametersChannel()
+        channels = [channel_eng, channel_env]
+
+        env = UnityEnvironment(file_name=path, no_graphics=hidden, worker_id=id, side_channels=channels)
+
+        channel_eng.set_configuration_parameters(time_scale=time_scale, quality_level=quality_level)
+        channel_env.set_float_parameter('slipperiness', slipperiness)
+        channel_env.set_float_parameter('steepness', steepness)
+
         return env
