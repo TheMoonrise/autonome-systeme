@@ -6,6 +6,7 @@ import numpy as np
 
 from gym import Env
 from torch.optim import Optimizer
+from datetime import datetime
 
 from .ppo_parameters import Parameters
 from .ppo_actor_critic import ActorCritic
@@ -52,16 +53,22 @@ class TrainAndEvaluate():
         :param device: String property naming the device used for training.
         :param save_interval: The interval at which to save the current model.
         """
-
         self.state = self.env.reset()
         self.done = [False]
 
         self.performance.clear()
         self.performance_counter = 0
+        self.start_time = datetime.now()
+
+        print('\nBegin Training')
+        print('Iteration, Epoch, Performance, ETA')
 
         for i in range(1, params.training_iterations + 1):
             performance = np.average(self.performance[-10:]) if self.performance else 0
-            print(f"\rIteration, Epoch, Performance [ {i:^5} | {len(self.performance):^5} | {performance:^5.0f} ]", end='')
+            eta = str((datetime.now() - self.start_time) * ((params.training_iterations - i) / i))
+            if '.' in eta: eta = eta[:eta.rindex('.')]
+
+            print(f'\r[ {i:^5} | {len(self.performance):^5} | {performance:^5.0f} | {eta} ]', end='  ')
 
             self._clear_trace()
             self._collect_trace(params, device)
