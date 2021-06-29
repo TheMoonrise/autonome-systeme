@@ -64,6 +64,7 @@ class Parameters:
         Saves the parameters to the mlflow server
         """
         mlflow.log_param('max episodes', self.max_episodes)
+        mlflow.log_param('hidden dim', self.hidden_dim)
         mlflow.log_param('batch size', self.batch_size)
         mlflow.log_param('max steps', self.max_steps)
         mlflow.log_param('initial exploration', self.initial_exploration)
