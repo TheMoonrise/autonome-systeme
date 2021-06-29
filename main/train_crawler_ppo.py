@@ -43,7 +43,7 @@ for run in range(args.runs):
     # check for cuda support
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(f'Training will be performed on {device}')
-    print(f"This training run uses the following parameters:\n{params.__dict__}")
+    print(f"This training run uses the following parameters:\n{params.__dict__}\n")
 
     # create a model to train and optimizer
     # if given as an commandline argument a pretrained model is used a starting point
@@ -90,7 +90,8 @@ for run in range(args.runs):
     os.makedirs(s_dir, exist_ok=True)
     plots = Plots(s_dir, 'ppo')
 
-    plots.plot_performance(train.performance)
+    plots.plot_performance(train.performance, 'Episode Performance')
+    plots.plot_performance(train.performance_avg, 'Avg Performance on Update')
     plots.plot_moving_avg_performance(train.performance)
 
     if params.mlflow:

@@ -42,6 +42,7 @@ class TrainAndEvaluate():
 
         # model performance tracking
         self.performance = []
+        self.performance_avg = []
         self.performance_counter = 0
         self.episode_steps = 0
 
@@ -71,7 +72,7 @@ class TrainAndEvaluate():
             print(f'\r[ {i:^5} | {len(self.performance):^5} | {performance:^5.0f} | {eta} ]', end='  ')
 
             self._clear_trace()
-            self._collect_trace(params, device)
+            self._collect_trace(params, device, i)
 
             # compute the discounted returns for each state in the trace
             state_next = self._shaped_state_tensor(self.state, device)
@@ -89,6 +90,10 @@ class TrainAndEvaluate():
 
             update = Update(params, states, actions, probs, returns, advantages)
             update.update(optimizer, self.model, i)
+
+            if i % params.log_interval == 0:
+                if params.mlflow: mlflow.log_metric('avg performance', performance, step=i)
+                self.performance_avg.append(performance)
 
             if save_interval > 0 and (i % save_interval == 0 or i == params.training_iterations):
                 appendix = f'-{i:0>4}-{performance:.0f}'
@@ -125,11 +130,12 @@ class TrainAndEvaluate():
         self.performance.append(self.performance_counter)
         return self.performance_counter
 
-    def _collect_trace(self, params: Parameters, device: str):
+    def _collect_trace(self, params: Parameters, device: str, iteration: int):
         """
         Samples a trace of training data from the environment
         :param params: The parameters used for the training.
         :param device: String property naming the device used for training.
+        :param iteration: The current update iteration.
         """
         for _ in range(params.trace):
             if all(self.done): self.state = self.env.reset()
@@ -160,8 +166,8 @@ class TrainAndEvaluate():
 
             if self.done[0]:
                 if params.mlflow:
-                    mlflow.log_metric('performance', self.performance_counter, step=len(self.performance))
-                    mlflow.log_metric('episode length', self.episode_steps, step=len(self.performance))
+                    mlflow.log_metric('performance', self.performance_counter, step=iteration)
+                    mlflow.log_metric('episode length', self.episode_steps, step=iteration)
 
                 self.performance.append(self.performance_counter)
                 self.performance_counter = 0
