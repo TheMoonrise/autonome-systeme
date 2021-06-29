@@ -60,7 +60,7 @@ class TrainAndEvaluate():
         self.performance_counter = 0
         self.start_time = datetime.now()
 
-        print('\nBegin Training')
+        print(f'\nBegin Training [{self.model.id}]')
         print('Iteration, Epoch, Performance, ETA')
 
         for i in range(1, params.training_iterations + 1):
@@ -92,8 +92,11 @@ class TrainAndEvaluate():
 
             if save_interval > 0 and (i % save_interval == 0 or i == params.training_iterations):
                 appendix = f'-{i:0>4}-{performance:.0f}'
-                self.model.save(appendix)
-                if params.mlflow: mlflow.log_artifact(self.model.model_path(appendix, is_save=True))
+                self.model.save(appendix, optimizer)
+
+                if params.mlflow:
+                    mlflow.log_artifact(self.model.model_path(appendix, is_save=True))
+                    mlflow.log_artifact(self.model.optimizer_path(appendix, is_save=True))
 
     def evaluate(self, render: bool):
         """

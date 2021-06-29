@@ -53,7 +53,12 @@ for run in range(args.runs):
     model = ActorCriticCrawler(params, model_name).to(device)
     if use_pretrained_model: model.load(device)
 
+    # load the optimizer state if available
     optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
+    opti_path = model.optimizer_path(is_save=False)
+
+    if (os.path.exists(opti_path)): optimizer.load_state_dict(torch.load(opti_path, map_location=device))
+    else: print('No optimizer state found for', model_name)
 
     # start mlflow run
     # if no run is active methods like mlflow.log_param will create a new run
