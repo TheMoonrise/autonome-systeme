@@ -1,5 +1,5 @@
 {
-	"training_iterations": 75000,
+	"training_iterations": 50000,
 	"clip": 0.2,
 	"epochs": 3,
 	"mini_batch_size": 32,

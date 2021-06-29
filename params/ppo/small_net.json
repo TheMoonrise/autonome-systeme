@@ -1,10 +1,10 @@
 {
-	"training_iterations": 75000,
+	"training_iterations": 50000,
 	"clip": 0.2,
 	"epochs": 3,
 	"mini_batch_size": 32,
 	"influence_critic_range": [0.5, 0.9],
-	"influence_entropy_range": [0.002, 0.008],
+	"influence_entropy_range": [0.005, 0.008],
 	"gamma": 0.995,
 	"lmbda": 1,
 	"trace": 32,
