@@ -16,10 +16,11 @@ from src.utils.wrapper import CrawlerWrapper
 parser = ArgumentParser(description='sac training crawler')
 parser.add_argument('--fname', type=str, help='the name under which the trained model is stored', default="test_run")
 parser.add_argument('--params', type=str, help='The parameter file for the model.')
+parser.add_argument('--speed', type=float, help='The time scale of the simulation.', default=1)
 args = parser.parse_args()
 
 # create a crawler environment and wrap it in the gym wrapper
-env = Domain().environment()
+env = Domain().environment(time_scale=args.speed)
 env = CrawlerWrapper(env)
 
 # load environment variables
@@ -93,7 +94,7 @@ def sac_train():
         state = env.reset()
         episode_reward = 0
 
-        for step in range(max_steps):
+        for step_count in range(max_steps):
             if episode > initial_exploration:
                 action = policy_net.get_action(state).detach()
                 next_state, reward, done, _ = env.step(action.numpy())
@@ -117,7 +118,7 @@ def sac_train():
             if done[0]:
                 performance = episode_reward
                 mlflow.log_metric('performance', performance, step=episode)
-                mlflow.log_metric('episode length', step, step=episode)
+                mlflow.log_metric('episode length', step_count, step=episode)
                 break
 
         if episode % 1000 == 0:
