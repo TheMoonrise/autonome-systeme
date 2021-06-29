@@ -18,12 +18,21 @@ use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 
 
-def plot(frame_idx, rewards):
+def plot_rewards(frame_idx, rewards):
     clear_output(True)
     plt.figure(figsize=(20, 5))
     plt.subplot(131)
     plt.title('frame %s. reward: %s' % (frame_idx, rewards[-1]))
     plt.plot(rewards)
+    plt.show()
+
+
+def plot_loss(frame_idx, loss):
+    clear_output(True)
+    plt.figure(figsize=(20, 5))
+    plt.subplot(131)
+    plt.title('frame %s. loss: %s' % (frame_idx, loss.detach().numpy()))
+    plt.plot(loss)
     plt.show()
 
 
@@ -33,7 +42,7 @@ env = NormalizedActions(gym.make("Pendulum-v0"))
 action_dim = env.action_space.shape[0]
 state_dim = env.observation_space.shape[0]
 
-params = Parameters(state_dim, action_dim)
+params = Parameters(state_dim, action_dim, "pendulum_test")
 
 # network parameters
 hidden_dim = params.hidden_dim
@@ -51,7 +60,7 @@ gamma = params.gamma
 # training parameters
 replay_buffer_size = params.replay_buffer_size
 batch_size = params.batch_size
-max_frames = params.max_frames
+max_frames = params.max_episodes
 max_steps = params.max_steps
 
 value_net = ValueNetwork(inputs, hidden_dim).to(device)
@@ -103,12 +112,12 @@ def sac_train():
             frame_idx += 1
 
             if len(replay_buffer) > batch_size:
-                sac_update(batch_size, gamma, soft_tau)
+                sac_update(batch_size, gamma, soft_tau, frame_idx)
 
             if frame_idx % 500 == 0:
                 print('Epoch:{}, episode reward is {}'.format(frame_idx, episode_reward))
                 policy_net.save(f'{frame_idx}')
-                # plot(frame_idx, rewards)
+                plot_rewards(frame_idx, rewards)
 
             if done:
                 break
@@ -116,7 +125,7 @@ def sac_train():
         rewards.append(episode_reward)
 
 
-def sac_update(batch_size, gamma, soft_tau):
+def sac_update(batch_size, gamma, soft_tau, frame_idx):
     """
     method that updates the two q functions, the value function and the policy function
     :param batch_size: batch size that is used for the update

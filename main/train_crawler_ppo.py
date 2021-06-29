@@ -14,13 +14,20 @@ from src.utils.wrapper import CrawlerWrapper
 from src.plots.plots import Plots
 
 parser = ArgumentParser(description='The argument mining prediction.')
+
 parser.add_argument('--runs', type=int, help='how many times the training will be performed.', default=1)
 parser.add_argument('--model', type=str, help='The name of the model to load.')
 parser.add_argument('--params', type=str, help='The parameter file for the model.')
+parser.add_argument('--tag', type=str, help='An additional tag for identifying this run.')
+
+parser.add_argument('--speed', type=float, help='Define the speed at which the simulation runs.', default=1)
+parser.add_argument('--quality', type=float, help='Define the quality of the physics simulation', default=1)
+parser.add_argument('--no-window', help='Hides the simulation window.', action='store_true')
+
 args = parser.parse_args()
 
 # create a crawler environment and wrap it in the gym wrapper
-env = Domain().environment()
+env = Domain().environment(args.speed, args.quality, args.no_window)
 env = CrawlerWrapper(env)
 
 # load environment variables
@@ -34,6 +41,7 @@ for run in range(args.runs):
     # check for cuda support
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(f'Training will be performed on {device}')
+    print(f"This training run uses the following parameters: {params.__dict__}")
 
     # create a model to train and optimizer
     # if given as an commandline argument a pretrained model is used a starting point
@@ -54,6 +62,9 @@ for run in range(args.runs):
         print('Starting mlflow run')
         params.log_to_mlflow()
 
+        if args.model is not None: mlflow.set_tag('parent model', model.name)
+        if args.tag is not None: mlflow.set_tag('tag', args.tag)
+
         try:
             # run the training loop
             train = TrainAndEvaluate(env, model)
@@ -67,5 +78,6 @@ for run in range(args.runs):
         with tempfile.TemporaryDirectory() as dir:
             plots = Plots(dir, 'ppo')
             plots.plot_performance(train.performance)
+            plots.plot_moving_avg_performance(train.performance)
 
             mlflow.log_artifacts(dir)
