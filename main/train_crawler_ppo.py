@@ -41,6 +41,7 @@ for run in range(args.runs):
     # check for cuda support
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(f'Training will be performed on {device}')
+    print(f"This training run uses the following parameters: {params.__dict__}")
 
     # create a model to train and optimizer
     # if given as an commandline argument a pretrained model is used a starting point
@@ -77,5 +78,6 @@ for run in range(args.runs):
         with tempfile.TemporaryDirectory() as dir:
             plots = Plots(dir, 'ppo')
             plots.plot_performance(train.performance)
+            plots.plot_moving_avg_performance(train.performance)
 
             mlflow.log_artifacts(dir)
