@@ -21,7 +21,7 @@ parser.add_argument('--params', type=str, help='The parameter file for the model
 parser.add_argument('--tag', type=str, help='An additional tag for identifying this run.')
 
 parser.add_argument('--speed', type=float, help='Define the speed at which the simulation runs.', default=1)
-parser.add_argument('--quality', type=float, help='Define the quality of the physics simulation.', default=1)
+parser.add_argument('--quality', type=int, help='Define the quality of the simulation.', default=0)
 parser.add_argument('--slipperiness', type=float, help='Define how slippery the ground is [0, 1]', default=0)
 parser.add_argument('--steepness', type=float, help='Define how steep and uneven the terrain is [0, 1]', default=0)
 parser.add_argument('--no-window', help='Hides the simulation window.', action='store_true')

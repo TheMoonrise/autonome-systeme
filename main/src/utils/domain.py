@@ -32,14 +32,13 @@ class Domain:
         path = os.path.join(dirname, '../../../environment', folder, f'Crawler{extension}')
         return path, hidden
 
-    def environment(self, time_scale: float = 2, quality_level: float = 1, hide_window: bool = False,
+    def environment(self, time_scale: float = 2, quality_level: int = 0, hide_window: bool = False,
                     slipperiness: float = 0, steepness: float = 0):
         """
         Generates a new unity ml environment.
         :param time_scale: The multiplier used for the physics simulation in unity.
         If a value larger than one is used, time moves more quickly and as such the simulation.
         :param quality_level: The quality level at which the simulation if performed.
-        A value below one might speed up the simulation at the cost of simulation accuracy.
         :param hide_window: When set the window is not shown and the training is performed in the backgound.
         :returns: A unity ml environment for the current platform
         """
