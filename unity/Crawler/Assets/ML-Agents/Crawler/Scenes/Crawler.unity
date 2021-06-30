@@ -275,6 +275,10 @@ PrefabInstance:
       propertyPath: m_LocalRotation.z
       value: 0.13088542
       objectReference: {fileID: 0}
+    - target: {fileID: 108227806558212132, guid: 5889392e3f05b448a8a06c5def6c2dec, type: 3}
+      propertyPath: m_CullingMask.m_Bits
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5889392e3f05b448a8a06c5def6c2dec, type: 3}
 --- !u!1001 &211847168
@@ -1350,8 +1354,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   groundPhysicsMat: {fileID: 13400000, guid: 5437eeefea48a534180683f0b415ec0a, type: 2}
   groundMat: {fileID: 2100000, guid: 1a81aa8dc825c0f4686e113e00049cab, type: 2}
-  defaultColor: {r: 0.24705882, g: 0.24705882, b: 0.24705882, a: 1}
-  iceColor: {r: 0.54509807, g: 1, b: 0.98039216, a: 1}
+  crawlerMat01: {fileID: 2100000, guid: c9fa44c2c3f8ce74ca39a3355ea42631, type: 2}
+  crawlerMat02: {fileID: 2100000, guid: c67450f290f3e4897bc40276a619e78d, type: 2}
+  defaultColor: {r: 1, g: 1, b: 1, a: 1}
+  iceColor: {r: 0, g: 1, b: 0.93333334, a: 1}
 --- !u!1 &2095421678
 GameObject:
   m_ObjectHideFlags: 0
@@ -1550,14 +1556,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 3421283062001101770, guid: 0058b366f9d6d44a3ba35beb06b0174b, type: 3}
-      propertyPath: typeOfCrawler
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5273562275074966566, guid: 0058b366f9d6d44a3ba35beb06b0174b, type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 4294967294
-      objectReference: {fileID: 0}
     - target: {fileID: 6810587057221831324, guid: 0058b366f9d6d44a3ba35beb06b0174b, type: 3}
       propertyPath: m_RootOrder
       value: 4
