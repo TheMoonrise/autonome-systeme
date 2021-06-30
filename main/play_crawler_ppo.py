@@ -15,11 +15,12 @@ parser.add_argument('--quality', type=int, help='Define the quality of the simul
 
 parser.add_argument('--slipperiness', type=float, help='Define how slippery the ground is [0, 1]', default=0)
 parser.add_argument('--steepness', type=float, help='Define how steep and uneven the terrain is [0, 1]', default=0)
+parser.add_argument('--hue', type=float, help='Defines the color hue of the crawler [0, 360]', default=50)
 
 args = parser.parse_args()
 
 # create a crawler environment and wrap it in the gym wrapper
-env = Domain().environment(args.speed, args.quality, slipperiness=args.slipperiness, steepness=args.steepness)
+env = Domain().environment(args.speed, args.quality, False, args.slipperiness, args.steepness, args.hue)
 env = CrawlerWrapper(env)
 
 # define the hyper parameters

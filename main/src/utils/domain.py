@@ -33,13 +33,16 @@ class Domain:
         return path, hidden
 
     def environment(self, time_scale: float = 2, quality_level: int = 0, hide_window: bool = False,
-                    slipperiness: float = 0, steepness: float = 0):
+                    slipperiness: float = 0, steepness: float = 0, hue: float = 0):
         """
         Generates a new unity ml environment.
         :param time_scale: The multiplier used for the physics simulation in unity.
         If a value larger than one is used, time moves more quickly and as such the simulation.
         :param quality_level: The quality level at which the simulation if performed.
         :param hide_window: When set the window is not shown and the training is performed in the backgound.
+        :param slipperiness: Defines how slippery the gound of the simulation is.
+        :param steepness: Defines how uneven the terrain in the simulation is.
+        :param hue: Defines the hue of the crawler.
         :returns: A unity ml environment for the current platform
         """
         path, hidden = self._build_path()
@@ -56,5 +59,6 @@ class Domain:
         channel_eng.set_configuration_parameters(time_scale=time_scale, quality_level=quality_level)
         channel_env.set_float_parameter('slipperiness', slipperiness)
         channel_env.set_float_parameter('steepness', steepness)
+        channel_env.set_float_parameter('hue', hue)
 
         return env

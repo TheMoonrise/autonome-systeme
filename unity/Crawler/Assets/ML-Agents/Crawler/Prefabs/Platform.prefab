@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2484487361121602618}
   - component: {fileID: 4850512454547987298}
   - component: {fileID: 2350262862881701802}
-  m_Layer: 14
+  m_Layer: 8
   m_Name: Uneven Ground
   m_TagString: ground
   m_Icon: {fileID: 0}
@@ -162,7 +162,7 @@ GameObject:
   - component: {fileID: 6837517112052221168}
   - component: {fileID: 6829370902646183816}
   - component: {fileID: 6805880649474809276}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Wall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -257,7 +257,7 @@ GameObject:
   - component: {fileID: 6836746497152517328}
   - component: {fileID: 6827502220462136834}
   - component: {fileID: 6808420949623700432}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Wall (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -352,7 +352,7 @@ GameObject:
   - component: {fileID: 6837353565563782272}
   - component: {fileID: 6829376291544629644}
   - component: {fileID: 6808627505318981872}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Wall (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -539,7 +539,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6810593986226363672}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Walls
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -576,7 +576,7 @@ GameObject:
   - component: {fileID: 6837318880424580882}
   - component: {fileID: 6827488706199143686}
   - component: {fileID: 6808790228207097120}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Wall (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

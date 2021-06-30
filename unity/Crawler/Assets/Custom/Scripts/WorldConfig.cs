@@ -6,17 +6,12 @@ using UnityEngine;
 public class WorldConfig : MonoBehaviour {
 
     [SerializeField] private PhysicMaterial groundPhysicsMat;
-    [SerializeField] private Material groundMat;
+    [SerializeField] private Material groundMat, crawlerMat01, crawlerMat02;
     [SerializeField] private Color defaultColor, iceColor;
 
     private float current_slipperiness = -1;
     private float current_steepness = -1;
-
-    private void Awake() {
-
-        UpdateSteepness(0);
-        UpdateSlipperiness(0);
-    }
+    private float current_hue = -1;
 
     void Update() {
 
@@ -27,6 +22,9 @@ public class WorldConfig : MonoBehaviour {
 
         var steepness = eparams.GetWithDefault("steepness", 0);
         UpdateSteepness(steepness);
+
+        var hue = eparams.GetWithDefault("hue", 50);
+        UpdateColor(hue);
     }
 
     private void UpdateSlipperiness(float slipperiness) {
@@ -48,5 +46,14 @@ public class WorldConfig : MonoBehaviour {
         current_steepness = steepness;
 
         foreach (var g in FindObjectsOfType<UnevenGround>()) g.Generate(steepness);
+    }
+
+    private void UpdateColor(float hue) {
+
+        if (current_hue == hue) return;
+        current_hue = hue;
+
+        crawlerMat01.SetColor("_Color", Color.HSVToRGB(hue / 360f, 1, 1));
+        crawlerMat02.SetColor("_Color", Color.HSVToRGB(hue / 360f, 1, .7f));
     }
 }

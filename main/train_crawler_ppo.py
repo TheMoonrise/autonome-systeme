@@ -24,13 +24,15 @@ parser.add_argument('--speed', type=float, help='Define the speed at which the s
 parser.add_argument('--quality', type=int, help='Define the quality of the simulation.', default=0)
 parser.add_argument('--slipperiness', type=float, help='Define how slippery the ground is [0, 1]', default=0)
 parser.add_argument('--steepness', type=float, help='Define how steep and uneven the terrain is [0, 1]', default=0)
+parser.add_argument('--hue', type=float, help='Defines the color hue of the crawler [0, 360]', default=50)
+
 parser.add_argument('--no-window', help='Hides the simulation window.', action='store_true')
 parser.add_argument('--no-mlflow', help='Disables mlflow logging for the run.', action='store_true')
 
 args = parser.parse_args()
 
 # create a crawler environment and wrap it in the gym wrapper
-env = Domain().environment(args.speed, args.quality, args.no_window, args.slipperiness, args.steepness)
+env = Domain().environment(args.speed, args.quality, args.no_window, args.slipperiness, args.steepness, args.hue)
 env = CrawlerWrapper(env)
 
 # load environment variables
