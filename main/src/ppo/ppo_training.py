@@ -6,6 +6,7 @@ import numpy as np
 
 from gym import Env
 from torch.optim import Optimizer
+from datetime import datetime
 
 from .ppo_parameters import Parameters
 from .ppo_actor_critic import ActorCritic
@@ -41,6 +42,7 @@ class TrainAndEvaluate():
 
         # model performance tracking
         self.performance = []
+        self.performance_avg = []
         self.performance_counter = 0
         self.episode_steps = 0
 
@@ -52,19 +54,25 @@ class TrainAndEvaluate():
         :param device: String property naming the device used for training.
         :param save_interval: The interval at which to save the current model.
         """
-
         self.state = self.env.reset()
         self.done = [False]
 
         self.performance.clear()
         self.performance_counter = 0
+        self.start_time = datetime.now()
+
+        print(f'\nBegin Training [{self.model.id}]')
+        print('Iteration, Epoch, Performance, ETA')
 
         for i in range(1, params.training_iterations + 1):
             performance = np.average(self.performance[-10:]) if self.performance else 0
-            print(f"\rIteration, Epoch, Performance [ {i:^5} | {len(self.performance):^5} | {performance:^5.0f} ]", end='')
+            eta = str((datetime.now() - self.start_time) * ((params.training_iterations - i) / i))
+            if '.' in eta: eta = eta[:eta.rindex('.')]
+
+            print(f'\r[ {i:^5} | {len(self.performance):^5} | {performance:^5.0f} | {eta} ]', end='  ')
 
             self._clear_trace()
-            self._collect_trace(params, device)
+            self._collect_trace(params, device, i)
 
             # compute the discounted returns for each state in the trace
             state_next = self._shaped_state_tensor(self.state, device)
@@ -83,10 +91,17 @@ class TrainAndEvaluate():
             update = Update(params, states, actions, probs, returns, advantages)
             update.update(optimizer, self.model, i)
 
+            if i % params.log_interval == 0:
+                if params.mlflow: mlflow.log_metric('avg performance', performance, step=i)
+                self.performance_avg.append(performance)
+
             if save_interval > 0 and (i % save_interval == 0 or i == params.training_iterations):
                 appendix = f'-{i:0>4}-{performance:.0f}'
-                self.model.save(appendix)
-                mlflow.log_artifact(self.model.model_path(appendix, is_save=True))
+                self.model.save(appendix, optimizer)
+
+                if params.mlflow:
+                    mlflow.log_artifact(self.model.model_path(appendix, is_save=True))
+                    mlflow.log_artifact(self.model.optimizer_path(appendix, is_save=True))
 
     def evaluate(self, render: bool):
         """
@@ -115,11 +130,12 @@ class TrainAndEvaluate():
         self.performance.append(self.performance_counter)
         return self.performance_counter
 
-    def _collect_trace(self, params: Parameters, device: str):
+    def _collect_trace(self, params: Parameters, device: str, iteration: int):
         """
         Samples a trace of training data from the environment
         :param params: The parameters used for the training.
         :param device: String property naming the device used for training.
+        :param iteration: The current update iteration.
         """
         for _ in range(params.trace):
             if all(self.done): self.state = self.env.reset()
@@ -149,8 +165,9 @@ class TrainAndEvaluate():
             self.episode_steps += 1
 
             if self.done[0]:
-                mlflow.log_metric('performance', self.performance_counter, step=len(self.performance))
-                mlflow.log_metric('episode length', self.episode_steps, step=len(self.performance))
+                if params.mlflow:
+                    mlflow.log_metric('performance', self.performance_counter, step=iteration)
+                    mlflow.log_metric('episode length', self.episode_steps, step=iteration)
 
                 self.performance.append(self.performance_counter)
                 self.performance_counter = 0

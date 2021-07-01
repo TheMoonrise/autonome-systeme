@@ -65,6 +65,12 @@ class Parameters:
         # the size of the second hidden layer
         self.hidden02 = 512
 
+        # whether mlflow should be enabled for the run
+        self.mlflow = True
+
+        # how often iteration based metrics should be logged
+        self.log_interval = 10
+
     def load(self, file_name: str):
         """
         Loads the parameters from a json file.
