@@ -1,13 +1,13 @@
 {
-	"training_iterations": 35000,
+	"training_iterations": 12000,
 	"clip": 0.2,
 	"epochs": 3,
-	"mini_batch_size": 64,
+	"mini_batch_size": 128,
 	"influence_critic": 0.7,
 	"influence_entropy": 0.005,
 	"gamma": 0.995,
 	"lmbda": 1,
-	"trace": 64,
+	"trace": 128,
 	"learning_rate": 3e-5,
 	"hidden01": 128,
 	"hidden02": 128

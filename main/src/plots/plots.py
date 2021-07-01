@@ -20,6 +20,7 @@ class Plots:
         """
         self.directory = directory
         self.tag = tag
+        self.figsize = [15, 6]
 
     def figure_path(self, file_name: str, format: str = 'png'):
         """
@@ -30,14 +31,15 @@ class Plots:
         """
         return os.path.join(self.directory, f'{file_name}-{self.tag}.{format}')
 
-    def plot_performance(self, values: List[float]):
+    def plot_performance(self, values: List[float], title: str):
         """
         Plots the performance of a training run.
         :param values: The performance in each episode during training.
         """
-        plt.figure()
+        plt.figure(figsize=self.figsize)
         plt.plot(values)
-        plt.savefig(self.figure_path('performance'))
+        plt.title(title)
+        plt.savefig(self.figure_path(title.lower().replace(' ', '-')))
 
     def plot_moving_avg_performance(self, values: List[float], window_size: int = 100):
         """
@@ -52,7 +54,7 @@ class Plots:
         window = np.ones(int(window_size)) / float(window_size)
         moving_avg = np.convolve(values, window, 'valid')
 
-        plt.figure()
+        plt.figure(figsize=self.figsize)
 
         # plot data
         plt.plot(values, color='royalblue', alpha=0.3, label='Performance')

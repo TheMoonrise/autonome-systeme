@@ -103,11 +103,10 @@ class Update:
         mlflow.log_metric('decaying influence entropy', self.params.influence_entropy, iteration)
 
         # log metrics to ml flow
-        mlflow.log_metric('loss', total_loss / self.params.epochs, iteration)
-
         # log most metrics not every iteration for better performance
-        if iteration % 10 != 0: return
+        if iteration % self.params.log_interval != 0 or not self.params.mlflow: return
 
+        mlflow.log_metric('loss', total_loss / self.params.epochs, iteration)
         mlflow.log_metric('objective actor', total_objc_actor / self.params.epochs, iteration)
         mlflow.log_metric('loss critic', total_loss_critic / self.params.epochs, iteration)
 

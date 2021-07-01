@@ -1,5 +1,5 @@
 import mlflow
-import tempfile
+import os
 import torch
 import torch.optim as optim
 
@@ -21,13 +21,18 @@ parser.add_argument('--params', type=str, help='The parameter file for the model
 parser.add_argument('--tag', type=str, help='An additional tag for identifying this run.')
 
 parser.add_argument('--speed', type=float, help='Define the speed at which the simulation runs.', default=1)
-parser.add_argument('--quality', type=float, help='Define the quality of the physics simulation', default=1)
+parser.add_argument('--quality', type=int, help='Define the quality of the simulation.', default=0)
+parser.add_argument('--slipperiness', type=float, help='Define how slippery the ground is [0, 1]', default=0)
+parser.add_argument('--steepness', type=float, help='Define how steep and uneven the terrain is [0, 1]', default=0)
+parser.add_argument('--hue', type=float, help='Defines the color hue of the crawler [0, 360]', default=50)
+
 parser.add_argument('--no-window', help='Hides the simulation window.', action='store_true')
+parser.add_argument('--no-mlflow', help='Disables mlflow logging for the run.', action='store_true')
 
 args = parser.parse_args()
 
 # create a crawler environment and wrap it in the gym wrapper
-env = Domain().environment(args.speed, args.quality, args.no_window)
+env = Domain().environment(args.speed, args.quality, args.no_window, args.slipperiness, args.steepness, args.hue)
 env = CrawlerWrapper(env)
 
 # load environment variables
@@ -37,11 +42,12 @@ for run in range(args.runs):
     # define the hyper parameters
     params = Parameters(env.observation_space_size, env.action_space_size)
     if args.params is not None: params.load(args.params)
+    params.mlflow = not args.no_mlflow
 
     # check for cuda support
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(f'Training will be performed on {device}')
-    print(f"This training run uses the following parameters: {params.__dict__}")
+    print(f"This training run uses the following parameters:\n{params.__dict__}\n")
 
     # create a model to train and optimizer
     # if given as an commandline argument a pretrained model is used a starting point
@@ -51,33 +57,47 @@ for run in range(args.runs):
     model = ActorCriticCrawler(params, model_name).to(device)
     if use_pretrained_model: model.load(device)
 
+    # load the optimizer state if available
     optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
+    opti_path = model.optimizer_path(is_save=False)
+
+    if (os.path.exists(opti_path)): optimizer.load_state_dict(torch.load(opti_path, map_location=device))
+    else: print('No optimizer state found for', model_name)
 
     # start mlflow run
     # if no run is active methods like mlflow.log_param will create a new run
     # a run is autometically closed when the with statement exits
     name_appendix = f'-{args.params.replace(".json", "").replace("_", "-")}' if args.params is not None else ''
 
-    with mlflow.start_run(run_name='ppo' + name_appendix) as run:
+    if params.mlflow:
         print('Starting mlflow run')
+        mlflow.start_run(run_name='ppo' + name_appendix)
         params.log_to_mlflow()
 
         if args.model is not None: mlflow.set_tag('parent model', model.name)
         if args.tag is not None: mlflow.set_tag('tag', args.tag)
 
-        try:
-            # run the training loop
-            train = TrainAndEvaluate(env, model)
-            train.train(params, optimizer, device, 1000)
+    try:
+        # run the training loop
+        train = TrainAndEvaluate(env, model)
+        train.train(params, optimizer, device, 1000)
 
-        except Exception as e:
-            print('Training ended prematurely')
-            print(e)
+    except Exception as e:
+        print('Training ended prematurely')
+        print(e)
 
-        # generate some graphics and save them to mlflow
-        with tempfile.TemporaryDirectory() as dir:
-            plots = Plots(dir, 'ppo')
-            plots.plot_performance(train.performance)
-            plots.plot_moving_avg_performance(train.performance)
+        if params.mlflow:
+            mlflow.set_tag('error', e)
 
-            mlflow.log_artifacts(dir)
+    # generate some graphics and save them to mlflow
+    s_dir = os.path.join(model.model_directory(True), 'plots')
+    os.makedirs(s_dir, exist_ok=True)
+    plots = Plots(s_dir, 'ppo')
+
+    plots.plot_performance(train.performance, 'Episode Performance')
+    plots.plot_performance(train.performance_avg, 'Avg Performance on Update')
+    plots.plot_moving_avg_performance(train.performance)
+
+    if params.mlflow:
+        mlflow.log_artifacts(s_dir)
+        mlflow.end_run()
