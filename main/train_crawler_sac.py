@@ -55,9 +55,11 @@ model_name = 'crawler'
 value_net = ValueNetwork(inputs, hidden_dim).to(device)
 target_value_net = ValueNetwork(inputs, hidden_dim).to(device)
 
+# two critic Q-networks
 soft_q_net1 = SoftQNetwork(inputs, outputs, hidden_dim).to(device)
 soft_q_net2 = SoftQNetwork(inputs, outputs, hidden_dim).to(device)
 
+# main actor network
 policy_net = PolicyNetwork(inputs, outputs, hidden_dim, model_name, device, params).to(device)
 
 """
@@ -102,6 +104,7 @@ def sac_train():
                 action = np.random.uniform(low=np.nextafter(-1.0, 0.0), high=1.0, size=(10, 20))
                 next_state, reward, done, _ = env.step(action)
 
+            # collecting experience from the environment with the current policy
             replay_buffer.push(state, action, reward, next_state, done)
 
             state = next_state
@@ -154,7 +157,7 @@ def sac_train():
 
             reward_total += reward[0]
             env.render()
-        # print(i, ":", reward_total)
+
         mlflow.log_metric('reward test episode', reward_total, step=i)
         all_rewards.append(reward_total)
     reward_mean = sum(all_rewards) / len(all_rewards)
@@ -169,8 +172,6 @@ def sac_update(batch_size, gamma, soft_tau, episode):
     :param gamma: discount factor applied to the rewards
     :param soft_tau: soft update coefficient for the target network
     """
-    # state has size (128, 10, 158)
-    # action has size (128, 10, 20)
     state, action, reward, next_state, done = replay_buffer.sample(batch_size)
 
     state = torch.FloatTensor(state).to(device)
@@ -184,27 +185,18 @@ def sac_update(batch_size, gamma, soft_tau, episode):
     predicted_q_value2 = soft_q_net2(state, action)
 
     # Calculate the predicted value of the SQN
-    # predicted_value has size of torch.Size([128, 10, 1])
     predicted_value = value_net(state)
     # Return the next action and the entropies based on the policy update
-    # new_action and log_prob have the size of 128, 10, 20
     new_action, log_prob, epsilon, mean, log_std = policy_net.evaluate(state)
 
 # Training Q Function
-    # target_value has torch.Size([128, 10, 1])
     target_value = target_value_net(next_state)
     # Calculate the actual value of the SQN
-    # reward and done have torch.Size([128, 1, 10])
-    # FIRST HACK: Swap 2nd and 3rd dimension
     reward = reward.transpose(1, 2)
     done = done.transpose(1, 2)
 
-    # SECOND HACK: select only first element to make them one dimensional
-    # target_q_value = reward[0][0][0] + (1 - done[0][0][0]) * gamma * target_value
-
     target_q_value = reward + (1 - done) * gamma * target_value
     # Calculate the loss between the predicted and the actual value of SQN
-    # without HACK: this returns a warning bc predicted_q_value1 128, 10, 1 and target_q_value would have 128, 10, 10
     q_value_loss1 = soft_q_criterion1(predicted_q_value1, target_q_value.detach())
 
     q_value_loss2 = soft_q_criterion2(predicted_q_value2, target_q_value.detach())
@@ -222,18 +214,13 @@ def sac_update(batch_size, gamma, soft_tau, episode):
     mlflow.log_metric('q2 loss', q_value_loss2.item(), step=episode)
 
 # Training Value Function
-    # predicted_new_q_value size 128, 10, 1
-    # new_action size 128, 10, 20
-    # state size 128, 10, 158
-    # Choose minimum between model 1 and model 2 Q-value for agent
+    # Choose minimum of Q-functions for the value gradient and policy gradient
+    # Two Q-functions significantly speed up training according to paper
     predicted_new_q_value = torch.min(soft_q_net1(state, new_action), soft_q_net2(state, new_action))
-    # target_value_func size 128, 10, 20
-    # log_prob size 128, 10, 20
     target_value_func = predicted_new_q_value - log_prob
     # HACK: reshape predicted_value
     reshape_v = torch.zeros(batch_size, 10, outputs).to(device)
     predicted_value = predicted_value - reshape_v
-    # without HACK: returns a warning bc predicted_value 128, 10, 1 and target_value_func 128, 10, 20
     value_loss = value_criterion(predicted_value, target_value_func.detach())
 
     value_optimizer.zero_grad()
@@ -244,12 +231,6 @@ def sac_update(batch_size, gamma, soft_tau, episode):
 
 # Training Policy Function
     policy_loss = (log_prob - predicted_new_q_value).mean()
-
-    # print("log_prob: ", log_prob[0][0])
-    # print("predicted_new_q_value: ", predicted_new_q_value[0][0])
-    # print("policy_loss: ", policy_loss)
-    # difference = log_prob - predicted_new_q_value
-    # print("difference: ", difference[0][0])
 
     policy_optimizer.zero_grad()
     policy_loss.backward()
