@@ -12,7 +12,7 @@ class Parameters:
 
     params_directory = "../../../params/sac"
 
-    def __init__(self, inputs: int, outputs: int, fname: str):
+    def __init__(self, inputs: int, outputs: int, fname: str, speed: float):
         """
         Initializes the parameters with default values.
         These values should NOT be changed in this class but on individual instances of it.
@@ -21,6 +21,8 @@ class Parameters:
         """
         # name of the run which is used to create the folder where the trained model is saved
         self.file_name = fname
+
+        self.speed = speed
 
         # actor critic parameters
         # the size of the state inputs
@@ -64,6 +66,7 @@ class Parameters:
         Saves the parameters to the mlflow server
         """
         mlflow.log_param('max episodes', self.max_episodes)
+        mlflow.log_param('simulation speed', self.speed)
         mlflow.log_param('hidden dim', self.hidden_dim)
         mlflow.log_param('batch size', self.batch_size)
         mlflow.log_param('max steps', self.max_steps)
