@@ -37,8 +37,6 @@ public class UnevenGround : MonoBehaviour {
                 uvs.Add(new Vector2(x, y) / steps * radius);
                 if (x == 0 || y == 0) continue;
 
-                print(uvs[uvs.Count - 1]);
-
                 var index = verts.Count - 1;
 
                 tris.Add(index);
@@ -55,6 +53,7 @@ public class UnevenGround : MonoBehaviour {
         mesh.SetVertices(verts);
         mesh.SetTriangles(tris, 0);
         mesh.SetUVs(0, uvs);
+        mesh.RecalculateNormals();
 
         filter.sharedMesh = mesh;
         collider.sharedMesh = mesh;
