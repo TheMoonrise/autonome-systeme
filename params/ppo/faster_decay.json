@@ -5,7 +5,7 @@
     "mini_batch_size": 28,
     "influence_critic": 0.5,
     "influence_entropy": 0.01,
-    "entropy_decay": 1e-8,
+    "entropy_decay": 1e-3,
     "gamma": 0.995,
     "lmbda": 1,
     "trace": 32,
