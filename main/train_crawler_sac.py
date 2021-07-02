@@ -55,7 +55,7 @@ model_name = 'crawler'
 value_net = ValueNetwork(inputs, hidden_dim).to(device)
 target_value_net = ValueNetwork(inputs, hidden_dim).to(device)
 
-# two critic Q-networks
+# Two Q-functions significantly speed up training by reducing overestimation bias according to paper
 soft_q_net1 = SoftQNetwork(inputs, outputs, hidden_dim).to(device)
 soft_q_net2 = SoftQNetwork(inputs, outputs, hidden_dim).to(device)
 
@@ -82,6 +82,7 @@ soft_q_optimizer1 = optim.Adam(soft_q_net1.parameters(), lr=soft_q_lr)
 soft_q_optimizer2 = optim.Adam(soft_q_net2.parameters(), lr=soft_q_lr)
 policy_optimizer = optim.Adam(policy_net.parameters(), lr=policy_lr)
 
+# Replay buffer to add gathered samples to.
 replay_buffer = ReplayBuffer(replay_buffer_size)
 
 
@@ -98,13 +99,15 @@ def sac_train():
 
         for step_count in range(max_steps):
             if episode > initial_exploration:
+                # observe state and select action
                 action = policy_net.get_action(state).detach()
+                # execute selected action in the environment
                 next_state, reward, done, _ = env.step(action.numpy())
             else:
                 action = np.random.uniform(low=np.nextafter(-1.0, 0.0), high=1.0, size=(10, 20))
                 next_state, reward, done, _ = env.step(action)
 
-            # collecting experience from the environment with the current policy
+            # collecting experience from the environment with the current policy by storing into replay buffer
             replay_buffer.push(state, action, reward, next_state, done)
 
             state = next_state
@@ -156,7 +159,7 @@ def sac_train():
             state = state_next.squeeze()
             iteration_done = done.item(0)
 
-            reward_total += reward[0]
+            reward_total += reward[0]  # führt das hier evtl. zu einem Fehler?
             env.render()
 
         mlflow.log_metric('reward test episode', reward_total, step=i)
@@ -173,6 +176,7 @@ def sac_update(batch_size, gamma, soft_tau, episode):
     :param gamma: discount factor applied to the rewards
     :param soft_tau: soft update coefficient for the target network
     """
+    # randomly sample a batch of transitions from the replay buffer
     state, action, reward, next_state, done = replay_buffer.sample(batch_size)
 
     state = torch.FloatTensor(state).to(device)
@@ -185,18 +189,20 @@ def sac_update(batch_size, gamma, soft_tau, episode):
     predicted_q_value1 = soft_q_net1(state, action)
     predicted_q_value2 = soft_q_net2(state, action)
 
-    # Calculate the predicted value of the SQN
+    # predicted_value: prediction of our value network
     predicted_value = value_net(state)
+
     # Return the next action and the entropies based on the policy update
     new_action, log_prob, epsilon, mean, log_std = policy_net.evaluate(state)
 
 # Training Q Function
     target_value = target_value_net(next_state)
-    # Calculate the actual value of the SQN
     reward = reward.transpose(1, 2)
     done = done.transpose(1, 2)
 
+    # compute targets for the Q-functions: yt(r,s′,d)=r+γ(minj=1,2Qϕtarg,j(s′,a~′)−αlogπθ(a~′|s′))
     target_q_value = reward + (1 - done) * gamma * target_value
+
     # Calculate the loss between the predicted and the actual value of SQN
     q_value_loss1 = soft_q_criterion1(predicted_q_value1, target_q_value.detach())
 
@@ -216,12 +222,19 @@ def sac_update(batch_size, gamma, soft_tau, episode):
 
 # Training Value Function
     # Choose minimum of Q-functions for the value gradient and policy gradient
-    # Two Q-functions significantly speed up training according to paper
+
     predicted_new_q_value = torch.min(soft_q_net1(state, new_action), soft_q_net2(state, new_action))
+
+    # calculate the target value for the Q-value network
+    # log_prob: entropy of the policy function π (measured here by the negative log of the policy function)
+    # predicted_new_q_value: prediction of our value network
+    # yt(r,s′,d)=r+γ(minj=1,2Qϕtarg,j(s′,a~′)−αlogπθ(a~θ(s,ξ)|s))
     target_value_func = predicted_new_q_value - log_prob
-    # HACK: reshape predicted_value
+
+    # for reshaping predicted_value
     reshape_v = torch.zeros(batch_size, 10, outputs).to(device)
     predicted_value = predicted_value - reshape_v
+
     value_loss = value_criterion(predicted_value, target_value_func.detach())
 
     value_optimizer.zero_grad()
