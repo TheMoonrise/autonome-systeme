@@ -53,7 +53,7 @@ class NormalizedActions(gym.ActionWrapper):
 
     def action(self, action):
         """
-        gets the original action value corresponding to the normalized action value 
+        gets the original action value corresponding to the normalized action value
         :param action: normalized action value
         :returns: action value
         """
