@@ -125,12 +125,10 @@ class PolicyNetwork(nn.Module):
         """
         evaluates the policy based on the current state
         :param state: current state
-        :param epsilon:
+        :param epsilon: entropy decay
         :returns: set of parameters for the policy network update
         """
         # Calculate Gaussian distribution of (mean, log_std)
-        # state has torch.Size([128, 10, 158])
-        # mean, log_std torch.Size([128, 10, 20]) because policy_net has 20 num_action
         mean, log_std = self.forward(state)
         std = log_std.exp()
 

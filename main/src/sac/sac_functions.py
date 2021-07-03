@@ -53,10 +53,9 @@ class NormalizedActions(gym.ActionWrapper):
 
     def action(self, action):
         """
-        returns the corresponding action from the normalized action space
-        :param action: chosen action
-        :returns:
-        TODO: check if correct
+        gets the original action value corresponding to the normalized action value 
+        :param action: normalized action value
+        :returns: action value
         """
         low = self.action_space.low
         high = self.action_space.high
@@ -68,10 +67,9 @@ class NormalizedActions(gym.ActionWrapper):
 
     def reverse_action(self, action):
         """
-        returns the
-        :param action:
-        :returns:
-        TODO: check if correct
+        normalizes the action space onto the interval [-1, 1]
+        :param action: action value
+        :returns: normalized action value
         """
         low = self.action_space.low
         high = self.action_space.high

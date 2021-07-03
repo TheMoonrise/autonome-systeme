@@ -123,7 +123,7 @@ class PolicyNetwork(nn.Module):
         """
         evaluates the policy based on the current state
         :param state: current state
-        :param epsilon:
+        :param epsilon: entropy decay
         :returns: set of parameters for the policy network update
         """
         # calculate Gaussian distribusion of (mean, log_std)
