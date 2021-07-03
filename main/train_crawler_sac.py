@@ -12,7 +12,7 @@ from src.sac.sac_functions import ReplayBuffer
 from src.utils.domain import Domain
 from src.utils.wrapper import CrawlerWrapper
 
-# parse argument from cmd
+# parse arguments from cmd
 parser = ArgumentParser(description='sac training crawler')
 parser.add_argument('--runs', type=int, help='how many times the training will be performed.', default=1)
 parser.add_argument('--model', type=str, help='The name of the model to load.')
@@ -37,7 +37,7 @@ env = CrawlerWrapper(env)
 # load environment variables
 load_dotenv()
 
-# define the hyper parameters
+# set the hyper parameters
 params = Parameters(env.observation_space_size, env.action_space_size, args.fname, args.speed)
 if args.params is not None: params.load(args.params)
 
@@ -115,6 +115,7 @@ def sac_train():
                 # execute selected action in the environment
                 next_state, reward, done, _ = env.step(action.numpy())
             else:
+                # behave as a random agent for the initial exploration phase
                 action = np.random.uniform(low=np.nextafter(-1.0, 0.0), high=1.0, size=(10, 20))
                 next_state, reward, done, _ = env.step(action)
 
@@ -127,11 +128,6 @@ def sac_train():
             if len(replay_buffer) > batch_size:
                 sac_update(batch_size, gamma, soft_tau, episode)
 
-            # if episode % 10000 == 0:
-            #     print('Epoch:{}, episode reward is {}'.format(episode, episode_reward))
-            #     policy_net.save(str(episode))
-            #     mlflow.pytorch.log_model(policy_net, str(episode))
-
             if done[0]:
                 performance = episode_reward
                 mlflow.log_metric('performance', performance, step=episode)
@@ -139,6 +135,7 @@ def sac_train():
                 break
 
         if episode % 1000 == 0:
+            # save trained models every 1000 (10.000) episodes
             print('Epoch:{}, episode reward is {}'.format(episode, episode_reward))
             path_to_current_model = policy_net.save(str(episode))
             if episode % 10000 == 0:
@@ -175,6 +172,7 @@ def sac_train():
 
         mlflow.log_metric('reward test episode', reward_total, step=i)
         all_rewards.append(reward_total)
+
     reward_mean = sum(all_rewards) / len(all_rewards)
     mlflow.log_param('mean test reward', reward_mean)
     print("Mean Reward after", number_iterations, "iterations:", reward_mean)
@@ -221,6 +219,7 @@ def sac_update(batch_size, gamma, soft_tau, episode):
 
     # Zero the gradient buffers
     soft_q_optimizer1.zero_grad()
+
     # Propagating the loss back
     q_value_loss1.backward()
     soft_q_optimizer1.step()
