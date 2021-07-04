@@ -96,16 +96,14 @@ class Update:
             loss.backward()
             optimizer.step()
 
-        # reduce entropy after epochs are finished/update is finished
         self.params.influence_entropy = self.params.influence_entropy * math.exp(-1. * iteration * self.params.entropy_decay)
-
-        # log entropy as metric to ml flow
-        mlflow.log_metric('decaying influence entropy', self.params.influence_entropy, iteration)
 
         # log metrics to ml flow
         # log most metrics not every iteration for better performance
         if iteration % self.params.log_interval != 0 or not self.params.mlflow: return
 
+        # log entropy as metric to ml flow
+        mlflow.log_metric('decaying influence entropy', self.params.influence_entropy, iteration)
         mlflow.log_metric('loss', total_loss / self.params.epochs, iteration)
         mlflow.log_metric('objective actor', total_objc_actor / self.params.epochs, iteration)
         mlflow.log_metric('loss critic', total_loss_critic / self.params.epochs, iteration)
