@@ -6,11 +6,11 @@ This repository holds the project files for team **Machine Learning League (MLL)
 
 Our work is based on the [Crawler Unity ML Domain](https://github.com/Unity-Technologies/ml-agents/blob/main/docs/Learning-Environment-Examples.md).
 The domain features a four legged creature whose task it is to collect blocks, which are randomly placed within the arena.
-There is always one block active in the arent. When this block is collected a new block appears.
+There is always one block active in the arena. When this block is collected, a new block appears.
 Rewards are issued for moving towards the block while looking at it.
-The overvation space consists of 158 continuous inputs while the actionspace holds 20 continuous outputs, which map to the target rotation of the joints within the creature.
+The observation space consists of 158 continuous inputs while the actionspace holds 20 continuous outputs, which map to the target rotation of the joints within the creature.
 For our experiments we did not modify the rewards or other domain properties which could impact receiving rewards.
-This allows us to compare our results to other crawler implementation which use the same version of the domain.
+This allows us to compare our results to other crawler implementations which use the same version of the domain.
 
 # Team Contributions
 
@@ -18,14 +18,14 @@ The following listing gives a brief overview of the project contributions of eac
 
 ## Verena
 
--   Implementation Algorithm SAC
+-   Helping with Implementation Algorithm SAC
 -   Hyperparameter Exploration & Training
 -   Evaluation of Training Results
 
 ## Mariam
 
 -   Implementation Algorithm SAC
--   Hyperparameter Exploration & Training
+-   Helping with Hyperparameter Exploration & Training
 -   Evaluation of Training Results
 
 ## Antonia
@@ -59,6 +59,7 @@ Below is a listing of all arguments alongside an explanation.
 
 #### `--model <model name>`
 
+[sac only for model playback]
 The pretrained model to be loaded.
 Models are loaded from the `models\ppo` or `models\sac` directories.
 Trained versions of both algorithms can be found there.
@@ -70,6 +71,7 @@ Parameter files are loaded from the `params` directories.
 
 #### `--runs <int>`
 
+[ppo only]
 The number of consecutive runs to be performed with the given settings.
 
 #### `--speed <float>`
@@ -145,7 +147,31 @@ python main\train_crawler_ppo.py --params small_net.json --speed 4 --no-window -
 
 ## SAC Playback
 
+To show the sac agent in action without training run `main\play_crawler_sac.py`.
+
+This supports the commandline arguments `--model --speed --quality --slipperiness --steepness --hue`.
+
+Note: Make sure the parameter file net size matches the net size of the model argument.
+
+An example call to run one of the more advanced sac models would be:
+
+```
+python main\play_crawler_sac.py --model crawler10000
+```
+
 ## SAC Training
+
+To train a model using sac run `main\train_crawler_sac.py`.
+
+This supports the commandline arguments `--fname --params --speed --quality --slipperiness --steepness --hue --no-window --no-mlflow`.
+
+Note: Make sure the parameter file net size matches the net size of the model argument.
+
+An example call to train a new sac model would be:
+
+```
+python main\train_crawler_sac.py --fname TestTraining --params default_params.json --no-window --no-mlflow
+```
 
 # Models & Hyper Parameters
 
@@ -170,4 +196,21 @@ collected trace     32
 learning rate       2e-5
 hidden layer 01     128
 hidden layer 02     128
+```
+
+## SAC
+
+```
+batch size              256
+gamma                   0.99
+hidden dim              512
+initial exploration     1000
+max episodes            20000
+max steps               500000
+policy learning rate    0.0003
+replay buffer size      500000
+simulation speed        1
+soft q learning rate    0.0003
+soft tau	            0.005
+value learning rate	    0.0003
 ```

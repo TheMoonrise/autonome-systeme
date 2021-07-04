@@ -12,27 +12,40 @@ from src.sac.sac_functions import ReplayBuffer
 from src.utils.domain import Domain
 from src.utils.wrapper import CrawlerWrapper
 
-# parse argument from cmd
+# parse arguments from cmd
 parser = ArgumentParser(description='sac training crawler')
 parser.add_argument('--fname', type=str, help='the name under which the trained model is stored', default="test_run")
+parser.add_argument('--runs', type=int, help='how many times the training will be performed.', default=1)
+parser.add_argument('--model', type=str, help='The name of the model to load.')
 parser.add_argument('--params', type=str, help='The parameter file for the model.')
+parser.add_argument('--tag', type=str, help='An additional tag for identifying this run.')
+
+parser.add_argument('--speed', type=float, help='Define the speed at which the simulation runs.', default=1)
+parser.add_argument('--quality', type=int, help='Define the quality of the simulation.', default=0)
+parser.add_argument('--slipperiness', type=float, help='Define how slippery the ground is [0, 1]', default=0)
+parser.add_argument('--steepness', type=float, help='Define how steep and uneven the terrain is [0, 1]', default=0)
+parser.add_argument('--hue', type=float, help='Defines the color hue of the crawler [0, 360]', default=50)
+
+parser.add_argument('--no-window', help='Hides the simulation window.', action='store_true')
+parser.add_argument('--no-mlflow', help='Disables mlflow logging for the run.', action='store_true')
+
 args = parser.parse_args()
 
 # create a crawler environment and wrap it in the gym wrapper
-env = Domain().environment()
+env = Domain().environment(args.speed, args.quality, args.no_window, args.slipperiness, args.steepness, args.hue)
 env = CrawlerWrapper(env)
 
 # load environment variables
 load_dotenv()
 
-# define the hyper parameters
-params = Parameters(env.observation_space_size, env.action_space_size, args.fname)
+# set the hyper parameters
+params = Parameters(env.observation_space_size, env.action_space_size, args.fname, args.speed)
 if args.params is not None: params.load(args.params)
 
 inputs = env.observation_space_size
 outputs = env.action_space_size
 
-hidden_dim = 512
+hidden_dim = params.hiddem_dim
 value_lr = params.value_lr
 soft_q_lr = params.soft_q_lr
 policy_lr = params.policy_lr
@@ -54,9 +67,11 @@ model_name = 'crawler'
 value_net = ValueNetwork(inputs, hidden_dim).to(device)
 target_value_net = ValueNetwork(inputs, hidden_dim).to(device)
 
+# Two Q-functions significantly speed up training by reducing overestimation bias according to paper
 soft_q_net1 = SoftQNetwork(inputs, outputs, hidden_dim).to(device)
 soft_q_net2 = SoftQNetwork(inputs, outputs, hidden_dim).to(device)
 
+# main actor network
 policy_net = PolicyNetwork(inputs, outputs, hidden_dim, model_name, device, params).to(device)
 
 """
@@ -79,6 +94,7 @@ soft_q_optimizer1 = optim.Adam(soft_q_net1.parameters(), lr=soft_q_lr)
 soft_q_optimizer2 = optim.Adam(soft_q_net2.parameters(), lr=soft_q_lr)
 policy_optimizer = optim.Adam(policy_net.parameters(), lr=policy_lr)
 
+# Replay buffer to add gathered samples to.
 replay_buffer = ReplayBuffer(replay_buffer_size)
 
 
@@ -93,14 +109,18 @@ def sac_train():
         state = env.reset()
         episode_reward = 0
 
-        for step in range(max_steps):
+        for step_count in range(max_steps):
             if episode > initial_exploration:
+                # observe state and select action
                 action = policy_net.get_action(state).detach()
+                # execute selected action in the environment
                 next_state, reward, done, _ = env.step(action.numpy())
             else:
+                # behave as a random agent for the initial exploration phase
                 action = np.random.uniform(low=np.nextafter(-1.0, 0.0), high=1.0, size=(10, 20))
                 next_state, reward, done, _ = env.step(action)
 
+            # collecting experience from the environment with the current policy by storing into replay buffer
             replay_buffer.push(state, action, reward, next_state, done)
 
             state = next_state
@@ -109,21 +129,18 @@ def sac_train():
             if len(replay_buffer) > batch_size:
                 sac_update(batch_size, gamma, soft_tau, episode)
 
-            # if episode % 10000 == 0:
-            #     print('Epoch:{}, episode reward is {}'.format(episode, episode_reward))
-            #     policy_net.save(str(episode))
-            #     mlflow.pytorch.log_model(policy_net, str(episode))
-
             if done[0]:
                 performance = episode_reward
                 mlflow.log_metric('performance', performance, step=episode)
-                mlflow.log_metric('episode length', step, step=episode)
+                mlflow.log_metric('episode length', step_count, step=episode)
                 break
 
         if episode % 1000 == 0:
+            # save trained models every 1000 (10.000) episodes
             print('Epoch:{}, episode reward is {}'.format(episode, episode_reward))
             path_to_current_model = policy_net.save(str(episode))
-            mlflow.pytorch.log_model(policy_net, str(episode))
+            if episode % 10000 == 0:
+                mlflow.pytorch.log_model(policy_net, str(episode))
 
         rewards.append(episode_reward)
         episode += 1
@@ -153,9 +170,10 @@ def sac_train():
 
             reward_total += reward[0]
             env.render()
-        # print(i, ":", reward_total)
+
         mlflow.log_metric('reward test episode', reward_total, step=i)
         all_rewards.append(reward_total)
+
     reward_mean = sum(all_rewards) / len(all_rewards)
     mlflow.log_param('mean test reward', reward_mean)
     print("Mean Reward after", number_iterations, "iterations:", reward_mean)
@@ -168,8 +186,7 @@ def sac_update(batch_size, gamma, soft_tau, episode):
     :param gamma: discount factor applied to the rewards
     :param soft_tau: soft update coefficient for the target network
     """
-    # state has size (128, 10, 158)
-    # action has size (128, 10, 20)
+    # randomly sample a batch of transitions from the replay buffer
     state, action, reward, next_state, done = replay_buffer.sample(batch_size)
 
     state = torch.FloatTensor(state).to(device)
@@ -182,34 +199,28 @@ def sac_update(batch_size, gamma, soft_tau, episode):
     predicted_q_value1 = soft_q_net1(state, action)
     predicted_q_value2 = soft_q_net2(state, action)
 
-    # Calculate the predicted value of the SQN
-    # predicted_value has size of torch.Size([128, 10, 1])
+    # predicted_value: prediction of our value network
     predicted_value = value_net(state)
+
     # Return the next action and the entropies based on the policy update
-    # new_action and log_prob have the size of 128, 10, 20
     new_action, log_prob, epsilon, mean, log_std = policy_net.evaluate(state)
 
 # Training Q Function
-    # target_value has torch.Size([128, 10, 1])
     target_value = target_value_net(next_state)
-    # Calculate the actual value of the SQN
-    # reward and done have torch.Size([128, 1, 10])
-    # FIRST HACK: Swap 2nd and 3rd dimension
     reward = reward.transpose(1, 2)
     done = done.transpose(1, 2)
 
-    # SECOND HACK: select only first element to make them one dimensional
-    # target_q_value = reward[0][0][0] + (1 - done[0][0][0]) * gamma * target_value
-
+    # compute targets for the Q-functions: yt(r,s′,d)=r+γ(minj=1,2Qϕtarg,j(s′,a~′)−αlogπθ(a~′|s′))
     target_q_value = reward + (1 - done) * gamma * target_value
+
     # Calculate the loss between the predicted and the actual value of SQN
-    # without HACK: this returns a warning bc predicted_q_value1 128, 10, 1 and target_q_value would have 128, 10, 10
     q_value_loss1 = soft_q_criterion1(predicted_q_value1, target_q_value.detach())
 
     q_value_loss2 = soft_q_criterion2(predicted_q_value2, target_q_value.detach())
 
     # Zero the gradient buffers
     soft_q_optimizer1.zero_grad()
+
     # Propagating the loss back
     q_value_loss1.backward()
     soft_q_optimizer1.step()
@@ -221,18 +232,15 @@ def sac_update(batch_size, gamma, soft_tau, episode):
     mlflow.log_metric('q2 loss', q_value_loss2.item(), step=episode)
 
 # Training Value Function
-    # predicted_new_q_value size 128, 10, 1
-    # new_action size 128, 10, 20
-    # state size 128, 10, 158
-    # Choose minimum between model 1 and model 2 Q-value for agent
+    # Choose minimum of Q-functions for the value gradient and policy gradient
     predicted_new_q_value = torch.min(soft_q_net1(state, new_action), soft_q_net2(state, new_action))
-    # target_value_func size 128, 10, 20
-    # log_prob size 128, 10, 20
+
+    # log_prob: entropy of the policy function π (measured here by the negative log of the policy function)
+    # See equation 6 from [1]
     target_value_func = predicted_new_q_value - log_prob
-    # HACK: reshape predicted_value
     reshape_v = torch.zeros(batch_size, 10, outputs).to(device)
     predicted_value = predicted_value - reshape_v
-    # without HACK: returns a warning bc predicted_value 128, 10, 1 and target_value_func 128, 10, 20
+
     value_loss = value_criterion(predicted_value, target_value_func.detach())
 
     value_optimizer.zero_grad()
@@ -242,13 +250,8 @@ def sac_update(batch_size, gamma, soft_tau, episode):
     mlflow.log_metric('value loss', value_loss.item(), step=episode)
 
 # Training Policy Function
+    # policy optimization with equation 10 from [1]: maxθE(s∼D,ξ∼N)[minj=1,2Qϕj(s,a~θ(s,ξ))−αlogπθ(a~θ(s,ξ)|s)]
     policy_loss = (log_prob - predicted_new_q_value).mean()
-
-    # print("log_prob: ", log_prob[0][0])
-    # print("predicted_new_q_value: ", predicted_new_q_value[0][0])
-    # print("policy_loss: ", policy_loss)
-    # difference = log_prob - predicted_new_q_value
-    # print("difference: ", difference[0][0])
 
     policy_optimizer.zero_grad()
     policy_loss.backward()
@@ -256,7 +259,7 @@ def sac_update(batch_size, gamma, soft_tau, episode):
 
     mlflow.log_metric('loss', policy_loss.item(), step=episode)
 
-    # Soft update model parameters. θ_target = τ*θ_local + (1 - τ)*θ_target
+    # Soft update model parameters of the value function. θ_target = τ*θ_local + (1 - τ)*θ_target
     for target_param, param in zip(target_value_net.parameters(), value_net.parameters()):
         target_param.data.copy_(
             target_param.data * (1.0 - soft_tau) + param.data * soft_tau
