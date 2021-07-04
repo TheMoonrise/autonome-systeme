@@ -156,7 +156,7 @@ Note: Make sure the parameter file net size matches the net size of the model ar
 An example call to run one of the more advanced sac models would be:
 
 ```
-python main\play_crawler_sac.py --model name
+python main\play_crawler_sac.py --model crawler10000
 ```
 
 ## SAC Training

@@ -168,7 +168,7 @@ def sac_train():
             state = state_next.squeeze()
             iteration_done = done.item(0)
 
-            reward_total += reward[0]  # führt das hier evtl. zu einem Fehler?
+            reward_total += reward[0]
             env.render()
 
         mlflow.log_metric('reward test episode', reward_total, step=i)
