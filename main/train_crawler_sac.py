@@ -14,6 +14,7 @@ from src.utils.wrapper import CrawlerWrapper
 
 # parse arguments from cmd
 parser = ArgumentParser(description='sac training crawler')
+parser.add_argument('--fname', type=str, help='the name under which the trained model is stored', default="test_run")
 parser.add_argument('--runs', type=int, help='how many times the training will be performed.', default=1)
 parser.add_argument('--model', type=str, help='The name of the model to load.')
 parser.add_argument('--params', type=str, help='The parameter file for the model.')
