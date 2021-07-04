@@ -42,6 +42,10 @@ class Parameters:
         # the factor at which the entropy influences the overall loss
         self.influence_entropy = 0.001
 
+        # the factor by which the influence_entropy decays over time
+        # if set to 0 influence entropy will not decay
+        self.entropy_decay = 0
+
         # return value parameters
         # the discount factor applied to the rewards in each timestep
         self.gamma = 0.9
@@ -105,6 +109,7 @@ class Parameters:
         mlflow.log_param('mini batch size', self.mini_batch_size)
         mlflow.log_param('influence critic', self.influence_critic)
         mlflow.log_param('influence entropy', self.influence_entropy)
+        mlflow.log_param('entropy decay', self.entropy_decay)
         mlflow.log_param('gamma', self.gamma)
         mlflow.log_param('lambda', self.lmbda)
         mlflow.log_param('trace', self.trace)
