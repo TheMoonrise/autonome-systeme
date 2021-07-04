@@ -35,8 +35,9 @@ args = parser.parse_args()
 env = Domain().environment(args.speed, args.quality, args.no_window, args.slipperiness, args.steepness, args.hue)
 env = CrawlerWrapper(env)
 
-# load environment variables
-load_dotenv()
+# load environment variables if training should be logged on the mlflow server
+if not args.no_mlflow:
+    load_dotenv()
 
 # set the hyper parameters
 params = Parameters(env.observation_space_size, env.action_space_size, args.fname, args.speed)
@@ -45,7 +46,7 @@ if args.params is not None: params.load(args.params)
 inputs = env.observation_space_size
 outputs = env.action_space_size
 
-hidden_dim = params.hiddem_dim
+hidden_dim = params.hidden_dim
 value_lr = params.value_lr
 soft_q_lr = params.soft_q_lr
 policy_lr = params.policy_lr

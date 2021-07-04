@@ -46,7 +46,7 @@ class Domain:
         :returns: A unity ml environment for the current platform
         """
         path, hidden = self._build_path()
-        if hide_window: hidden = False
+        if hide_window: hidden = True
 
         id = random.randint(0, 65535)
 
