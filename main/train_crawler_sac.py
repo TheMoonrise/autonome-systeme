@@ -45,7 +45,7 @@ if args.params is not None: params.load(args.params)
 inputs = env.observation_space_size
 outputs = env.action_space_size
 
-hidden_dim = 512
+hidden_dim = params.hiddem_dim
 value_lr = params.value_lr
 soft_q_lr = params.soft_q_lr
 policy_lr = params.policy_lr

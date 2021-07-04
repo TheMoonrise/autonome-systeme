@@ -23,7 +23,7 @@ parser.add_argument('--hue', type=float, help='Defines the color hue of the craw
 args = parser.parse_args()
 
 # create a crawler environment and wrap it in the gym wrapper
-env = Domain().environment()
+env = Domain().environment(args.speed, args.quality, False, args.slipperiness, args.steepness, args.hue)
 env = CrawlerWrapper(env)
 
 name = "testrun"
@@ -35,13 +35,16 @@ params = Parameters(env.observation_space_size, env.action_space_size, file_name
 inputs = env.observation_space_size
 outputs = env.action_space_size
 
+# hidden_dim = 128
 hidden_dim = 512
 max_frames = params.max_episodes
 max_steps = params.max_steps
 
 policy_net = PolicyNetwork(inputs, outputs, hidden_dim, name, device).to(device)
 
-policy_net.load_state_dict(torch.load('../models/ac/temp/def3/crawler4000', map_location=device))
+model_path = 'models/sac/' + args.model
+
+policy_net.load_state_dict(torch.load(model_path, map_location=device))
 policy_net.eval()
 
 all_rewards = []
