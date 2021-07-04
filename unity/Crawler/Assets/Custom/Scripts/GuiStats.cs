@@ -30,7 +30,7 @@ public class GuiStats : MonoBehaviour {
         lastStepCount = steps;
         lastReward = reward;
 
-        var info = $"Step: {steps:0000}/{agent.MaxStep}\nReward: {reward:0.00}\nLast Reward: {lastEpisodeReward:0.00}\nAverage Reward (100): {averageReward:0.00}";
+        var info = $"Step: {steps:0000}/{agent.MaxStep}\nReward: {reward:0.00}\nLast Reward: {lastEpisodeReward:0.00}\nAverage Reward: {averageReward:0.00}";
         GUI.Label(new Rect(10, 10, 300, 100), info);
     }
 }

@@ -31,6 +31,7 @@ if args.params is not None: params.load(args.params)
 # use the first commandline argument for the model if given
 model = ActorCriticCrawler(params, args.model)
 model.load()
+model.eval()
 
 # run the training loop
 train = TrainAndEvaluate(env, model)
