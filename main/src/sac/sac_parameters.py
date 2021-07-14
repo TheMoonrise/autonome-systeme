@@ -61,6 +61,8 @@ class Parameters:
         # Maximum steps per episode
         self.max_steps = 500000
 
+        self.epsilon_e = 1e-6
+
     def log_to_mlflow(self):
         """
         Saves the parameters to the mlflow server

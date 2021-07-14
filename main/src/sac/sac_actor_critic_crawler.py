@@ -121,7 +121,7 @@ class PolicyNetwork(nn.Module):
         # mean and log_std have torch.Size([1, 10, 20])
         return mean, log_std
 
-    def evaluate(self, state, epsilon=1e-6):
+    def evaluate(self, state, epsilon):
         """
         evaluates the policy based on the current state
         :param state: current state

@@ -57,6 +57,7 @@ gamma = params.gamma
 max_episodes = params.max_episodes
 initial_exploration = params.initial_exploration
 max_steps = params.max_steps
+epsilon_e = params.epsilon_e
 
 # check for cuda support
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -204,7 +205,7 @@ def sac_update(batch_size, gamma, soft_tau, episode):
     predicted_value = value_net(state)
 
     # Return the next action and the entropies based on the policy update
-    new_action, log_prob, epsilon, mean, log_std = policy_net.evaluate(state)
+    new_action, log_prob, epsilon, mean, log_std = policy_net.evaluate(state, epsilon_e)
 
 # Training Q Function
     target_value = target_value_net(next_state)
