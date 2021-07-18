@@ -41,14 +41,14 @@ class Plots:
         plt.title(title)
         plt.savefig(self.figure_path(title.lower().replace(' ', '-')))
 
-    def plot_moving_avg_performance(self, values: List[float], window_size: int = 100):
+    def plot_moving_avg_performance(self, values: List[float], title: str, window_size: int = 100):
         """
         Plots the moving average of the performance of the training run.
         :param values: The performance of each episode during training.
         :param window_size: The number of samples to consider for calculating the moving average.
         """
         # change plot style
-        # plt.style.use('ggplot')
+        plt.style.use('ggplot')
 
         # calculate moving average
         window = np.ones(int(window_size)) / float(window_size)
@@ -67,4 +67,4 @@ class Plots:
         plt.legend()
 
         # save plot
-        plt.savefig(self.figure_path('avg-performance'))
+        plt.savefig(self.figure_path(f'avg-performance_{title}'))
