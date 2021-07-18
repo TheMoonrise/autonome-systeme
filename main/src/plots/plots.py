@@ -1,6 +1,7 @@
 """Contains functions for generating plots"""
 
 import os
+from types import LambdaType
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -66,10 +67,43 @@ class Plots:
         plt.plot(moving_avg, color='royalblue', label='Moving average of performance')
 
         # set plot information
-        # plt.title('Moving Average of Performance')
-        plt.xlabel('Episode')
+        plt.title(title)
         plt.ylabel('Performance')
         plt.legend()
 
         # save plot
         plt.savefig(self.figure_path(f'avg_{title}'))
+
+    def plot_moving_avg_std_performance(self, values: List[float], title: str, window_size: int = 100):
+
+        np_values = np.array(values)
+
+        # calculate moving average
+        window = np.ones(int(window_size)) / float(window_size)
+        moving_avg = np.convolve(values, window, 'valid')
+
+        # calculate moving standard deviation
+        cumsum = np.cumsum(np_values)
+        cumsum_square = np.cumsum(np_values**2)
+        cumsum = np.insert(cumsum, 0, 0)                    # Insert a 0 at the beginning of the array
+        cumsum_square = np.insert(cumsum_square, 0, 0)      # Insert a 0 at the beginning of the array
+        seg_sum = cumsum[window_size:] - cumsum[:-window_size]
+        seg_sum_square = cumsum_square[window_size:] - cumsum_square[:-window_size]
+        std = np.sqrt(seg_sum_square / window_size - (seg_sum / window_size)**2)
+        std = std.tolist()
+
+        plt.figure(figsize=self.figsize)
+
+        # plot data
+        plt.plot(moving_avg, color='royalblue', label='Moving average of performance')
+        plt.fill_between(x=np.arange(len(moving_avg)), y1=moving_avg + std, y2=moving_avg - std, alpha=0.3,
+                         facecolor='royalblue', label='Moving standard deviation of performance')
+
+        # set plot information
+        plt.title(title)
+        plt.xlabel('Iteration')
+        plt.ylabel('Performance')
+        plt.legend()
+
+        # save plot
+        plt.savefig(self.figure_path(f'avg_std_{title}'))

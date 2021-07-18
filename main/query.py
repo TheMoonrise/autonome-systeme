@@ -57,3 +57,6 @@ s_dir = os.path.join(os.path.dirname(__file__), '../plots')
 os.makedirs(s_dir, exist_ok=True)
 plots = Plots(s_dir, 'eval')
 plots.plot_performance(values, title=f'{key}_{run}')
+for value in values:
+    plots.plot_moving_avg_performance(value, title=f'{key}_{run}')
+    plots.plot_moving_avg_std_performance(value, title=f'{key}_{run}')
