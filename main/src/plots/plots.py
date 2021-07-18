@@ -4,7 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-from typing import List
+from typing import List, Union
 
 
 class Plots:
@@ -31,13 +31,18 @@ class Plots:
         """
         return os.path.join(self.directory, f'{file_name}-{self.tag}.{format}')
 
-    def plot_performance(self, values: List[float], title: str):
+    def plot_performance(self, values: Union[List[float], List[List[float]]], title: str):
         """
         Plots the performance of a training run.
         :param values: The performance in each episode during training.
         """
+        plt.style.use('ggplot')
+
+        if not isinstance(values[0], list):
+            values = [values]
         plt.figure(figsize=self.figsize)
-        plt.plot(values)
+        for v in values:
+            plt.plot(v)
         plt.title(title)
         plt.savefig(self.figure_path(title.lower().replace(' ', '-')))
 
@@ -67,4 +72,4 @@ class Plots:
         plt.legend()
 
         # save plot
-        plt.savefig(self.figure_path(f'avg-performance_{title}'))
+        plt.savefig(self.figure_path(f'avg_{title}'))
