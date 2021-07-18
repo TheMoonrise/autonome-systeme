@@ -19,6 +19,7 @@ if os.path.isfile(file_name):
         data = json.load(f)
 else:
     # get data from mlflow api
+    assert None not in (run_id, key)
     url = f'http://157.245.22.106:5000/api/2.0/mlflow/metrics/get-history?run_id={run_id}&metric_key={key}'
     data = requests.get(url).json()['metrics']
     with open(file_name, 'w') as f:
