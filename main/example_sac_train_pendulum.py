@@ -8,6 +8,8 @@ import torch.optim as optim
 from IPython.display import clear_output
 import matplotlib.pyplot as plt
 
+from argparse import ArgumentParser
+
 from src.sac.sac_actor_critic import ValueNetwork, SoftQNetwork, PolicyNetwork
 from src.sac.sac_functions import NormalizedActions, ReplayBuffer
 from src.sac.sac_parameters import Parameters
@@ -16,6 +18,11 @@ model_name = 'pendulum'
 
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
+
+parser = ArgumentParser(description='The argument mining prediction.')
+parser.add_argument('--speed', type=float, help='Define the speed at which the simulation runs.', default=1)
+
+args = parser.parse_args()
 
 
 def plot_rewards(frame_idx, rewards):
@@ -42,7 +49,7 @@ env = NormalizedActions(gym.make("Pendulum-v0"))
 action_dim = env.action_space.shape[0]
 state_dim = env.observation_space.shape[0]
 
-params = Parameters(state_dim, action_dim, "pendulum_test")
+params = Parameters(state_dim, action_dim, "pendulum_test", args.speed)
 
 # network parameters
 hidden_dim = params.hidden_dim
@@ -62,6 +69,7 @@ replay_buffer_size = params.replay_buffer_size
 batch_size = params.batch_size
 max_frames = params.max_episodes
 max_steps = params.max_steps
+epsilon_e = params.epsilon_e
 
 value_net = ValueNetwork(inputs, hidden_dim).to(device)
 target_value_net = ValueNetwork(inputs, hidden_dim).to(device)
@@ -117,8 +125,22 @@ def sac_train():
             if frame_idx % 500 == 0:
                 print('Epoch:{}, episode reward is {}'.format(frame_idx, episode_reward))
                 policy_net.save(f'{frame_idx}')
+            
+            if frame_idx % 5000 == 0:
+                plot_rewards(frame_idx, rewards)
+            
+            if frame_idx % 6000 == 0:
                 plot_rewards(frame_idx, rewards)
 
+            if frame_idx % 7000 == 0:
+                plot_rewards(frame_idx, rewards)
+            
+            if frame_idx % 8000 == 0:
+                plot_rewards(frame_idx, rewards)
+
+            if frame_idx % 9000 == 0:
+                plot_rewards(frame_idx, rewards)
+            
             if done:
                 break
 

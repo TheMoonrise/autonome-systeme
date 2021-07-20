@@ -35,8 +35,9 @@ params = Parameters(env.observation_space_size, env.action_space_size, file_name
 inputs = env.observation_space_size
 outputs = env.action_space_size
 
+hidden_dim = 256
 # hidden_dim = 128
-hidden_dim = 512
+# hidden_dim = 512
 max_frames = params.max_episodes
 max_steps = params.max_steps
 

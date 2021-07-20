@@ -4,9 +4,9 @@ import gym
 import torch
 
 hidden_dim = 256
+# hidden_dim = 512
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
-
 
 env = NormalizedActions(gym.make("Pendulum-v0"))
 
@@ -18,7 +18,7 @@ name = "testrun"
 
 policy_net = PolicyNetwork(state_dim, action_dim, hidden_dim, name, device).to(device)
 
-policy_net.load_state_dict(torch.load('../models/sac/temp/pendulum4000', map_location=device))
+policy_net.load_state_dict(torch.load('models/sac/temp/pendulum10500', map_location=device))
 policy_net.eval()
 
 reward_mean = 0
