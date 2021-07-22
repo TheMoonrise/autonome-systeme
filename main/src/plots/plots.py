@@ -12,6 +12,7 @@ class Plots:
     """
     Class for plotting training results.
     """
+
     # change plot style
     plt.style.use('seaborn-darkgrid')
 
@@ -45,7 +46,7 @@ class Plots:
         plt.figure(figsize=self.figsize)
         for v in values:
             plt.plot(v)
-        plt.title(title)
+        # plt.title(title)
         plt.savefig(self.figure_path(title.lower().replace(' ', '-')))
 
     def plot_moving_avg_performance(self, values: List[float], title: str, window_size: int = 300):
@@ -66,7 +67,7 @@ class Plots:
         plt.plot(moving_avg, color='royalblue', label='Moving average of performance')
 
         # set plot information
-        plt.title(title)
+        # plt.title(title)
         plt.ylabel('Performance')
         plt.legend()
 
@@ -104,7 +105,7 @@ class Plots:
                          facecolor='royalblue', label='Moving standard deviation of performance')
 
         # set plot information
-        plt.title(title)
+        # plt.title(title)
         plt.xlabel('Iteration')
         plt.ylabel('Performance')
         plt.legend()
