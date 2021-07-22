@@ -12,6 +12,8 @@ class Plots:
     """
     Class for plotting training results.
     """
+    # change plot style
+    plt.style.use('seaborn-darkgrid')
 
     def __init__(self, directory: str, tag: str):
         """
@@ -37,7 +39,6 @@ class Plots:
         Plots the performance of a training run.
         :param values: The performance in each episode during training.
         """
-        plt.style.use('ggplot')
 
         if not isinstance(values[0], list):
             values = [values]
@@ -47,14 +48,12 @@ class Plots:
         plt.title(title)
         plt.savefig(self.figure_path(title.lower().replace(' ', '-')))
 
-    def plot_moving_avg_performance(self, values: List[float], title: str, window_size: int = 100):
+    def plot_moving_avg_performance(self, values: List[float], title: str, window_size: int = 300):
         """
-        Plots the moving average of the performance of the training run.
+        Plots the moving average and the unchanged performance of the performance of the training run.
         :param values: The performance of each episode during training.
         :param window_size: The number of samples to consider for calculating the moving average.
         """
-        # change plot style
-        plt.style.use('ggplot')
 
         # calculate moving average
         window = np.ones(int(window_size)) / float(window_size)
@@ -74,7 +73,12 @@ class Plots:
         # save plot
         plt.savefig(self.figure_path(f'avg_{title}'))
 
-    def plot_moving_avg_std_performance(self, values: List[float], title: str, window_size: int = 100):
+    def plot_moving_avg_std_performance(self, values: List[float], title: str, window_size: int = 300):
+        """
+        Plots the moving average and moving standard deviation of the performance of the training run.
+        :param values: The performance of each episode during training.
+        :param window_size: The number of samples to consider for calculating the moving average.
+        """
 
         np_values = np.array(values)
 
@@ -107,3 +111,36 @@ class Plots:
 
         # save plot
         plt.savefig(self.figure_path(f'avg_std_{title}'))
+
+    def plot_performance_curves(self, values: Union[List[float], List[List[float]]], title: str, window_size: int = 300,
+                                max_length: int = 0):
+        """
+        Plots the moving average of the performance of the training run.
+        :param values: The performance of each episode during training.
+        :param window_size: The number of samples to consider for calculating the moving average.
+        """
+
+        plt.figure(figsize=self.figsize)
+
+        if not isinstance(values[0], list):
+            values = [values]
+
+        if not max_length:
+            max_length = len(min(values, key=len))
+
+        for v in values:
+            # cut values to same length
+            if len(v) > max_length:
+                del v[max_length:]
+
+            # calculate moving average
+            window = np.ones(int(window_size)) / float(window_size)
+            moving_avg = np.convolve(v, window, 'valid')
+            plt.plot(moving_avg)
+
+        # set plot information
+        # plt.title(title)
+        plt.ylabel('Performance')
+
+        # save plot
+        plt.savefig(self.figure_path(f'avg_{title}'))

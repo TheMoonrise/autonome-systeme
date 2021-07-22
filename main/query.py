@@ -8,6 +8,7 @@ from argparse import ArgumentParser
 parser = ArgumentParser(description='The plotting arg parser.')
 parser.add_argument('--run_id', type=str, nargs='+', help='run id of the run you want to plot')
 parser.add_argument('--key', type=str, help='metric you want to plot')
+parser.add_argument('--concat', action="store_true")
 args = parser.parse_args()
 
 run_id = args.run_id
@@ -50,13 +51,25 @@ for run in run_id:
             json.dump(data, f)
 
     # values.append([x['value'] for x in data])
-    values.append(run_values(data))
+    if args.concat:
+        values += run_values(data)
+    else:
+        values.append(run_values(data))
 
-for x in values: print(len(x))
 s_dir = os.path.join(os.path.dirname(__file__), '../plots')
 os.makedirs(s_dir, exist_ok=True)
 plots = Plots(s_dir, 'eval')
 plots.plot_performance(values, title=f'{key}_{run}')
-for value in values:
-    plots.plot_moving_avg_performance(value, title=f'{key}_{run}')
-    plots.plot_moving_avg_std_performance(value, title=f'{key}_{run}')
+
+
+if args.concat:
+    plots.plot_moving_avg_performance(values, title=f'{key}_{run}')
+    plots.plot_moving_avg_std_performance(values, title=f'{key}_{run}')
+
+else:
+    for value in values:
+        plots.plot_moving_avg_performance(value, title=f'{key}_{run}')
+        plots.plot_moving_avg_std_performance(value, title=f'{key}_{run}')
+        pass
+
+plots.plot_performance_curves(values, title=f'{key}_{run}')
