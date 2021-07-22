@@ -63,8 +63,8 @@ class Plots:
         plt.figure(figsize=self.figsize)
 
         # plot data
-        plt.plot(values, color='royalblue', alpha=0.3, label='Performance')
-        plt.plot(moving_avg, color='royalblue', label='Moving average of performance')
+        plt.plot(values, color='blue', alpha=0.3, label='Performance')
+        plt.plot(moving_avg, color='blue', label='Moving average of performance')
 
         # set plot information
         # plt.title(title)
