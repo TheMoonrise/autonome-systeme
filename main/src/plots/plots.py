@@ -113,8 +113,8 @@ class Plots:
         # save plot
         plt.savefig(self.figure_path(f'avg_std_{title}'))
 
-    def plot_performance_curves(self, values: Union[List[float], List[List[float]]], title: str, window_size: int = 300,
-                                max_length: int = 0):
+    def plot_performance_curves(self, values: Union[List[float], List[List[float]]], params: List[float], title: str,
+                                window_size: int = 1500, max_length: int = 0):
         """
         Plots the moving average of the performance of the training run.
         :param values: The performance of each episode during training.
@@ -140,8 +140,9 @@ class Plots:
             plt.plot(moving_avg)
 
         # set plot information
-        # plt.title(title)
+        plt.title(title)
         plt.ylabel('Performance')
+        plt.legend(params)
 
         # save plot
         plt.savefig(self.figure_path(f'avg_{title}'))
